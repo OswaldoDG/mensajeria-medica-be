@@ -1,0 +1,6 @@
+@mensajeriamedica.api.identity_HostAddress = http://localhost:5212
+
+GET {{mensajeriamedica.api.identity_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

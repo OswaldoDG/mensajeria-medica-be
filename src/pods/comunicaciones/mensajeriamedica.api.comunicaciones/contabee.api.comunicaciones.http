@@ -1,0 +1,6 @@
+@mensajeriamedica.api.comunicaciones_HostAddress = http://localhost:5136
+
+GET {{mensajeriamedica.api.comunicaciones_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
