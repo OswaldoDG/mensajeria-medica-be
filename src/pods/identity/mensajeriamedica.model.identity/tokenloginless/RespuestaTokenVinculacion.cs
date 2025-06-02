@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace contabee.model.identity.tokenloginless;
+namespace mensajeriamedica.model.identity.tokenloginless;
 
 /// <summary>
 /// DTO de respuesta par aun token loginless.

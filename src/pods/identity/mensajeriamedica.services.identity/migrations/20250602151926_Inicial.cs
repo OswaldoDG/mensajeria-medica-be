@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace contabee.services.identity.data.migrations
+namespace mensajeriamedica.services.identity.migrations
 {
     /// <inheritdoc />
     public partial class Inicial : Migration
@@ -168,6 +168,23 @@ namespace contabee.services.identity.data.migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "seguridad$vinculacion",
+                columns: table => new
+                {
+                    DeviceId = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Token = table.Column<string>(type: "varchar(10)", maxLength: 10, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Fecha = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    Activado = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_seguridad$vinculacion", x => x.DeviceId);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -288,6 +305,55 @@ namespace contabee.services.identity.data.migrations
                     table.ForeignKey(
                         name: "FK_AspNetUserTokens_AspNetUsers_UserId",
                         column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "seguridad$dispusuario",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    UsuarioId = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    DispositivoId = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    FechaAsociacion = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_seguridad$dispusuario", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_seguridad$dispusuario_AspNetUsers_UsuarioId",
+                        column: x => x.UsuarioId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "seguridad$tokensloginless",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    UsuarioId = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Token = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    FechaCreacion = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    UsuarioCreador = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_seguridad$tokensloginless", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_seguridad$tokensloginless_AspNetUsers_UsuarioId",
+                        column: x => x.UsuarioId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -442,9 +508,29 @@ namespace contabee.services.identity.data.migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_seguridad$dispusuario_UsuarioId",
+                table: "seguridad$dispusuario",
+                column: "UsuarioId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_seguridad$tokensloginless_Token",
+                table: "seguridad$tokensloginless",
+                column: "Token");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_seguridad$tokensloginless_UsuarioId",
+                table: "seguridad$tokensloginless",
+                column: "UsuarioId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_seguridad$usuariosrolcf_CuentaFiscalId_UsuarioId",
                 table: "seguridad$usuariosrolcf",
                 columns: new[] { "CuentaFiscalId", "UsuarioId" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_seguridad$vinculacion_Token_Fecha",
+                table: "seguridad$vinculacion",
+                columns: new[] { "Token", "Fecha" });
         }
 
         /// <inheritdoc />
@@ -472,16 +558,25 @@ namespace contabee.services.identity.data.migrations
                 name: "OpenIddictTokens");
 
             migrationBuilder.DropTable(
+                name: "seguridad$dispusuario");
+
+            migrationBuilder.DropTable(
+                name: "seguridad$tokensloginless");
+
+            migrationBuilder.DropTable(
                 name: "seguridad$usuariosrolcf");
+
+            migrationBuilder.DropTable(
+                name: "seguridad$vinculacion");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "AspNetUsers");
+                name: "OpenIddictAuthorizations");
 
             migrationBuilder.DropTable(
-                name: "OpenIddictAuthorizations");
+                name: "AspNetUsers");
 
             migrationBuilder.DropTable(
                 name: "OpenIddictApplications");

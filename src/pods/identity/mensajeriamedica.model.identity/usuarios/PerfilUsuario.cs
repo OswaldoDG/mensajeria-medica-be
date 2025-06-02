@@ -1,4 +1,4 @@
-﻿namespace contabee.model.identity.usuarios;
+﻿namespace mensajeriamedica.model.identity.usuarios;
 
 /// <summary>
 /// DTO del perfil de usuario para las UIs.

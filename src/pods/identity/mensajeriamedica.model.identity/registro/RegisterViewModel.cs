@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace contabee.model.identity.registro;
+namespace mensajeriamedica.model.identity.registro;
 
 public class RegisterViewModel
 {

@@ -3,7 +3,7 @@ using comunes.respuestas;
 using mensajeriamedica.model.identity.administracion;
 using mensajeriamedica.model.identity.registro;
 
-namespace contabee.services.identity.administracion;
+namespace mensajeriamedica.services.identity.administracion;
 
 /// <summary>
 /// Defincion del servicio de adminsitracion.

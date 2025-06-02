@@ -9,11 +9,11 @@ using mensajeriamedica.services.identity.dbcontext;
 
 #nullable disable
 
-namespace contabee.services.identity.migrations
+namespace mensajeriamedica.services.identity.migrations
 {
     [DbContext(typeof(DbContextIdentity))]
-    [Migration("20250501214300_DispositivosUsaurio")]
-    partial class DispositivosUsaurio
+    [Migration("20250602151926_Inicial")]
+    partial class Inicial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -365,7 +365,7 @@ namespace contabee.services.identity.migrations
                     b.ToTable("OpenIddictTokens", (string)null);
                 });
 
-            modelBuilder.Entity("contabee.model.identity.registro.ApplicationUser", b =>
+            modelBuilder.Entity("mensajeriamedica.model.identity.registro.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("varchar(255)");
@@ -451,22 +451,13 @@ namespace contabee.services.identity.migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("contabee.model.identity.tokenloginless.TokenLoginLess", b =>
+            modelBuilder.Entity("mensajeriamedica.model.identity.tokenloginless.TokenLoginLess", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<bool>("Caduca")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<DateTime?>("Caducidad")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<Guid?>("CuentaFiscalId")
-                        .HasColumnType("char(36)");
 
                     b.Property<DateTime>("FechaCreacion")
                         .HasColumnType("datetime(6)");
@@ -486,18 +477,38 @@ namespace contabee.services.identity.migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CuentaFiscalId");
-
                     b.HasIndex("Token");
 
                     b.HasIndex("UsuarioId");
 
-                    b.HasIndex("Caduca", "Caducidad");
-
                     b.ToTable("seguridad$tokensloginless", (string)null);
                 });
 
-            modelBuilder.Entity("contabee.model.identity.usuarios.DispositivoUsuario", b =>
+            modelBuilder.Entity("mensajeriamedica.model.identity.tokenloginless.TokenVinculacion", b =>
+                {
+                    b.Property<string>("DeviceId")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<bool>("Activado")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
+
+                    b.HasKey("DeviceId");
+
+                    b.HasIndex("Token", "Fecha");
+
+                    b.ToTable("seguridad$vinculacion", (string)null);
+                });
+
+            modelBuilder.Entity("mensajeriamedica.model.identity.usuarios.DispositivoUsuario", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -525,7 +536,7 @@ namespace contabee.services.identity.migrations
                     b.ToTable("seguridad$dispusuario", (string)null);
                 });
 
-            modelBuilder.Entity("contabee.model.identity.usuarios.RolCuentaFiscal", b =>
+            modelBuilder.Entity("mensajeriamedica.model.identity.usuarios.RolCuentaFiscal", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -564,7 +575,7 @@ namespace contabee.services.identity.migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("contabee.model.identity.registro.ApplicationUser", null)
+                    b.HasOne("mensajeriamedica.model.identity.registro.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -573,7 +584,7 @@ namespace contabee.services.identity.migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("contabee.model.identity.registro.ApplicationUser", null)
+                    b.HasOne("mensajeriamedica.model.identity.registro.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -588,7 +599,7 @@ namespace contabee.services.identity.migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("contabee.model.identity.registro.ApplicationUser", null)
+                    b.HasOne("mensajeriamedica.model.identity.registro.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -597,7 +608,7 @@ namespace contabee.services.identity.migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("contabee.model.identity.registro.ApplicationUser", null)
+                    b.HasOne("mensajeriamedica.model.identity.registro.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -628,18 +639,18 @@ namespace contabee.services.identity.migrations
                     b.Navigation("Authorization");
                 });
 
-            modelBuilder.Entity("contabee.model.identity.tokenloginless.TokenLoginLess", b =>
+            modelBuilder.Entity("mensajeriamedica.model.identity.tokenloginless.TokenLoginLess", b =>
                 {
-                    b.HasOne("contabee.model.identity.registro.ApplicationUser", null)
+                    b.HasOne("mensajeriamedica.model.identity.registro.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("contabee.model.identity.usuarios.DispositivoUsuario", b =>
+            modelBuilder.Entity("mensajeriamedica.model.identity.usuarios.DispositivoUsuario", b =>
                 {
-                    b.HasOne("contabee.model.identity.registro.ApplicationUser", "Usuario")
+                    b.HasOne("mensajeriamedica.model.identity.registro.ApplicationUser", "Usuario")
                         .WithMany("DispositivosUsuario")
                         .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -660,7 +671,7 @@ namespace contabee.services.identity.migrations
                     b.Navigation("Tokens");
                 });
 
-            modelBuilder.Entity("contabee.model.identity.registro.ApplicationUser", b =>
+            modelBuilder.Entity("mensajeriamedica.model.identity.registro.ApplicationUser", b =>
                 {
                     b.Navigation("DispositivosUsuario");
                 });

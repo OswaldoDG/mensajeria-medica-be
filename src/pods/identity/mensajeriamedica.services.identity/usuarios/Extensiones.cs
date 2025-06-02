@@ -6,7 +6,7 @@ using mensajeriamedica.model.identity.usuarios;
 using mensajeriamedica.services.identity.dbcontext;
 using Microsoft.EntityFrameworkCore;
 
-namespace contabee.services.identity.usuarios;
+namespace mensajeriamedica.services.identity.usuarios;
 
 public static class Extensiones
 {

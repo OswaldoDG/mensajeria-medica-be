@@ -1,7 +1,7 @@
 ﻿using comunes.respuestas;
 using mensajeriamedica.model.identity.registro;
 
-namespace contabee.services.identity.registro;
+namespace mensajeriamedica.services.identity.registro;
 
 /// <summary>
 /// Métodos del serviciso de regsitro de usuarios.

@@ -5,7 +5,7 @@ using mensajeriamedica.model.identity.tokenloginless;
 using mensajeriamedica.model.identity.usuarios;
 using Microsoft.AspNetCore.Identity;
 
-namespace contabee.model.identity.registro;
+namespace mensajeriamedica.model.identity.registro;
 
 // Add profile data for application users by adding properties to the ApplicationUser class
 public class ApplicationUser : IdentityUser

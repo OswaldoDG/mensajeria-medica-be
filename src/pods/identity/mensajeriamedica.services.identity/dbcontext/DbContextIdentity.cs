@@ -5,7 +5,7 @@ using mensajeriamedica.services.identity.configuracion;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace contabee.services.identity.dbcontext;
+namespace mensajeriamedica.services.identity.dbcontext;
 
 public class DbContextIdentity(DbContextOptions options) : IdentityDbContext<ApplicationUser>(options)
 {
