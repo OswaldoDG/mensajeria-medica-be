@@ -1,4 +1,4 @@
-﻿namespace contabee.model.identity.tokenloginless;
+﻿namespace mensajeriamedica.model.identity.tokenloginless;
 
 public class TokenVinculacion
 {

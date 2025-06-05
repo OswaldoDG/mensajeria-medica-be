@@ -5,7 +5,7 @@ using comunes.busqueda;
 using comunes.respuestas;
 using mensajeriamedica.model.identity.registro;
 
-namespace contabee.model.identity.usuarios;
+namespace mensajeriamedica.model.identity.usuarios;
 
 /// <summary>
 /// Extensiones de usuario.

@@ -7,7 +7,7 @@ using mensajeriamedica.services.identity.dbcontext;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 
-namespace contabee.services.identity.registro;
+namespace mensajeriamedica.services.identity.registro;
 
 /// <summary>
 /// Servicio de procesamiento del registro de usuarios.

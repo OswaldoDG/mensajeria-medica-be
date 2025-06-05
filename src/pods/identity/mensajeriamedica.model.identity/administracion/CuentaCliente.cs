@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace contabee.model.identity.administracion;
+namespace mensajeriamedica.model.identity.administracion;
 
 /// <summary>
 /// DTO par la gestion de las cuentas de clientes.

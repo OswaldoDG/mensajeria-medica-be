@@ -2,7 +2,7 @@
 using System.Xml.Serialization;
 using mensajeriamedica.model.identity.registro;
 
-namespace contabee.model.identity.usuarios;
+namespace mensajeriamedica.model.identity.usuarios;
 
 /// <summary>
 /// Mantiene la relación dispositivo usuario.

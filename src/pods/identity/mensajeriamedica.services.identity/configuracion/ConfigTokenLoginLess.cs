@@ -4,7 +4,7 @@ using mensajeriamedica.services.identity.dbcontext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace contabee.services.identity.configuracion;
+namespace mensajeriamedica.services.identity.configuracion;
 public class ConfigTokenLoginLess : IEntityTypeConfiguration<TokenLoginLess>
 {
     public void Configure(EntityTypeBuilder<TokenLoginLess> builder)

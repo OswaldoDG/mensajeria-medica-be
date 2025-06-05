@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging;
 
-namespace contabee.model.identity.administracion;
+namespace mensajeriamedica.model.identity.administracion;
 
 /// <summary>
 /// Implementacion del servicio de administracion.

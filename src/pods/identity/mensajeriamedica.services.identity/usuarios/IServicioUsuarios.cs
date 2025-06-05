@@ -4,7 +4,7 @@ using mensajeriamedica.model.identity.registro;
 using mensajeriamedica.model.identity.tokenloginless;
 using mensajeriamedica.model.identity.usuarios;
 
-namespace contabee.services.identity.usuarios;
+namespace mensajeriamedica.services.identity.usuarios;
 
 /// <summary>
 /// DEfine los metodos del servicio de usuarios.

@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using mensajeriamedica.model.identity.registro;
 
-namespace contabee.model.identity.administracion;
+namespace mensajeriamedica.model.identity.administracion;
 
 /// <summary>
 /// Datos compartidos para la administarcion de cuentas.

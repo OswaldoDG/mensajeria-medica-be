@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
-namespace contabee.model.identity.tokenloginless;
+namespace mensajeriamedica.model.identity.tokenloginless;
 
 /// <summary>
 /// Define tokens de acceso para usuarios sin login.

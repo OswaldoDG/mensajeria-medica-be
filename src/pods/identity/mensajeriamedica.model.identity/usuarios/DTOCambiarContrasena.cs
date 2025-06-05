@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace contabee.model.identity.usuarios;
+namespace mensajeriamedica.model.identity.usuarios;
 
 /// <summary>
 /// DTO Para realizar el cambio de contraseña.

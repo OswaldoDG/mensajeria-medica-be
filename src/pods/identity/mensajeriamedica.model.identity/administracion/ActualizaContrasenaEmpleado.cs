@@ -1,4 +1,4 @@
-﻿namespace contabee.model.identity.administracion;
+﻿namespace mensajeriamedica.model.identity.administracion;
 
 public class ActualizaContrasenaEmpleado
 {

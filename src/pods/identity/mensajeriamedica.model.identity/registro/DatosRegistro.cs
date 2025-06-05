@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace contabee.model.identity.registro;
+namespace mensajeriamedica.model.identity.registro;
 
 /// <summary>
 /// Dto para obtener los datos de un registro pendiente.

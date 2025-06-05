@@ -3,7 +3,7 @@ using mensajeriamedica.services.identity.dbcontext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace contabee.services.identity.configuracion;
+namespace mensajeriamedica.services.identity.configuracion;
 
 /// <summary>
 /// Configuraci[on de la entidad.

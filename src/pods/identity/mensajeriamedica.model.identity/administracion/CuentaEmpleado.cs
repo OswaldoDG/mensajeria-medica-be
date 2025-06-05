@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace contabee.model.identity.administracion;
+namespace mensajeriamedica.model.identity.administracion;
 
 /// <summary>
 /// Informacin de la cuenta de empleados.

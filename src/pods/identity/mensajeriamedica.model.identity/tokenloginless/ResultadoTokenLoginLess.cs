@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace contabee.model.identity.tokenloginless;
+namespace mensajeriamedica.model.identity.tokenloginless;
 
 /// <summary>
 /// DTO para la transferencia del token.

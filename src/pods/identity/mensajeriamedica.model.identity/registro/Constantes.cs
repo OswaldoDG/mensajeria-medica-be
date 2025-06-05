@@ -1,4 +1,4 @@
-﻿namespace contabee.model.identity.registro;
+﻿namespace mensajeriamedica.model.identity.registro;
 
 [Flags]
 public enum TipoCuenta

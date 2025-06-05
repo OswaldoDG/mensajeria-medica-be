@@ -14,10 +14,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using CuentaUsuario = contabee.model.identity.usuarios.CuentaUsuario;
-using TipoCuenta = contabee.model.identity.registro.TipoCuenta;
+using CuentaUsuario = mensajeriamedica.model.identity.usuarios.CuentaUsuario;
+using TipoCuenta = mensajeriamedica.model.identity.registro.TipoCuenta;
 
-namespace contabee.services.identity.usuarios;
+namespace mensajeriamedica.services.identity.usuarios;
 
 /// <summary>
 /// Servicio de usuarios de la aplicacion.

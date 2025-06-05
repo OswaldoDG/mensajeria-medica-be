@@ -1,4 +1,4 @@
-﻿namespace contabee.services.identity;
+﻿namespace mensajeriamedica.services.identity;
 
 public static class CodigosError
 {

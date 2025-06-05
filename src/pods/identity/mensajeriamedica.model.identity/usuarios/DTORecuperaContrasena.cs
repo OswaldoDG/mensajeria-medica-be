@@ -1,4 +1,4 @@
-﻿namespace contabee.model.identity.usuarios;
+﻿namespace mensajeriamedica.model.identity.usuarios;
 
 public class DTORecuperaContrasena
 {

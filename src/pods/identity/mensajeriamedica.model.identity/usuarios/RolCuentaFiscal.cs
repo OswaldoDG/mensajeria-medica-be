@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace contabee.model.identity.usuarios;
+namespace mensajeriamedica.model.identity.usuarios;
 
 /// <summary>
 /// Entidad de control de los roles por cuenta fiscal de un usuario.

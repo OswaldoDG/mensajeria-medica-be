@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using comunes.respuestas;
 
-namespace contabee.model.identity.usuarios;
+namespace mensajeriamedica.model.identity.usuarios;
 
 /// <summary>
 /// Codigos de error de usuarios.

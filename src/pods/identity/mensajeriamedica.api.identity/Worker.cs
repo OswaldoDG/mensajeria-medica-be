@@ -35,11 +35,11 @@ public class Worker(IServiceProvider serviceProvider) : IHostedService
             }
         }
 
-        if (await manager.FindByClientIdAsync("contabee-interservicio") == null)
+        if (await manager.FindByClientIdAsync("mensajeriamedica-interservicio") == null)
         {
             await manager.CreateAsync(new OpenIddictApplicationDescriptor
             {
-                ClientId = "contabee-interservicio",
+                ClientId = "mensajeriamedica-interservicio",
                 ClientSecret = "s3cr3t0",
                 DisplayName = "Acceso interservicio",
                 Permissions =
@@ -72,7 +72,7 @@ public class Worker(IServiceProvider serviceProvider) : IHostedService
             }
         }
 
-        if (await manager.FindByClientIdAsync("contabee-password") == null)
+        if (await manager.FindByClientIdAsync("mensajeriamedica-password") == null)
         {
             await manager.CreateAsync(new OpenIddictApplicationDescriptor
             {
