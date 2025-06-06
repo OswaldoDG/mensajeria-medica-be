@@ -1,0 +1,30 @@
+﻿1. Al arrancar el procesador de archovo debe traer todos los registros de  la tabla 'Servidor' 
+	los resultados deben ser almacenados en cache por 10 minutos 
+
+	1.1. Para cada cliente verificar que la carpeta exista en base a la propiedad FolderFtp y que contenga los siguientes 2 folders en su interior 
+		- ok
+		- erroneos
+		- duplicados
+		Crear los sudirectorios si no existen.
+		
+		Si el FolderFtp no existe o si no se pueden crear los subdirectorio se debe registrar un error en el log del sistema y eliminar el cliente de la lista de resultados.
+
+
+2. En cada ciclo de procesos deberá consultarse con el cache, si la lista no existe debe repertirse el paso 1 antes de continuar
+
+
+3. Para cada servidor de la lista el procesador de archivos toma los archivos desde FolderFtp y para cada uno de ellos realiza las siguientes acciones:
+
+	3.1  Se calcula el hash en base64 del contenid del mensaje utilizando ExtensionesProcesamiento.GetSha256Hash
+		3.1.1 Si el hash ya existe en la tabla Mensaje con estado Enviado se mueve el archivo a la  carpeta 'duplicados' añadiendo un consecutivo
+		si ya existe uno con el mismo nombre y se pasa al siguiente archivo 
+	
+	3.1 Utilizando el servicio IInterpreteHL7 se interpreta el contenido del archivo, leído como texto, y se obtiene un objeto de tipo ContactoEstudio. 
+	
+	3.1.1 Si ContactoEstudio.DatosValidos = true se inserta un regsitro en la tabla Mensaje del DbContext  con los datos obtenidos y el archivo es copiado 
+		al directorio 'ok' y renombrado con como "mensaje-{Id del servidor}-{Id de la sucursal}-{IdDelregistro}.hl7"
+
+	3.1.2 Si ContactoEstudio.DatosValidos = false solo mover el archivo  la carpeta definida por 'erroneos' dentro del mismo folder de FTP.
+
+4. Una vez terminado el procesamiento de los archivos de todos los clientes el proceso debe esperar N segundos antes de volverse a ejecutar, N es un valor definido en 
+	el appsettings en la clave IntervaloSegundosPollFtp.

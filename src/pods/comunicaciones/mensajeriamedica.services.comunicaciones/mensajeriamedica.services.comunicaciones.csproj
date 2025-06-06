@@ -34,4 +34,14 @@
 	  <ProjectReference Include="..\mensajeriamedica.model.comunicaciones\mensajeriamedica.model.comunicaciones.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="colamensajes\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="interpretes\campos_archivo.pdf">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
 </Project>
