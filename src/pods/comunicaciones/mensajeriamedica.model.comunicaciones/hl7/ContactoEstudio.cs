@@ -21,7 +21,13 @@ public class ContactoEstudio
     /// <summary>
     /// Nombre del cotnacto.
     /// </summary>
-    public string? NombreContacto { get; set; }
+    public string? NombreContacto { get; set; } // Juntar apellidos y nombre
+
+    /// <summary>
+    /// Pais del contacto.
+    /// </summary>
+    public string? Pais { get; set; }
+
 
     /// <summary>
     /// URL para la consulta del estudio.
@@ -29,12 +35,7 @@ public class ContactoEstudio
     public string? Url { get; set; }
 
     /// <summary>
-    /// Identificador del cliente al que pertenece el mensaje.
-    /// </summary>
-    public long? CLienteId { get; set; }
-
-    /// <summary>
     /// Identificador de la sucursal que publica el mensaje.
     /// </summary>
-    public string? SucursalId { get; set; }
+    public string? SucursalId { get; set; } // Sucursal /clinica
 }
