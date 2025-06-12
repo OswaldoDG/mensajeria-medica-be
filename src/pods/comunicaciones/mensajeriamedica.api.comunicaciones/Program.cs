@@ -1,7 +1,10 @@
 using System.Reflection;
+using System.Text.Json.Serialization;
 using comunes.extensiones;
+using mensajeriamedica.services.comunicaciones;
 using mensajeriamedica.services.comunicaciones.interpretes;
 using mensajeriamedica.services.comunicaciones.servicios;
+using Microsoft.EntityFrameworkCore;
 
 #pragma warning disable S1118 // Utility classes should not have public constructors
 #pragma warning disable S3903 // Types should be defined in named namespaces
@@ -15,6 +18,19 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
         builder.CreaConfiguracionStandar(Assembly.GetExecutingAssembly());
+        var connectionString = builder.Configuration.GetConnectionString("contabee-mensajeria");
+
+        builder.Services.AddControllers().AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        });
+
+        builder.Services.AddDbContext<DbContextMensajeria>(options =>
+        {
+            options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+        });
+
         builder.Services.AddHttpClient();
         builder.Services.AddHostedService<ProcesadorArchivos>();
         builder.Services.AddSingleton<IInterpreteHL7, InterpreteHL7>();
