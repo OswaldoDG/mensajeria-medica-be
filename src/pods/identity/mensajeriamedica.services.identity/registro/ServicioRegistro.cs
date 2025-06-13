@@ -2,7 +2,6 @@
 using comunes.proxies.proxygenerico;
 using comunes.respuestas;
 using mensajeriamedica.model.identity.registro;
-using mensajeriamedica.model.identity.usuarios;
 using mensajeriamedica.services.identity.dbcontext;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
@@ -70,18 +69,6 @@ public class ServicioRegistro(ILogger<ServicioRegistro> logger, UserManager<Appl
                 respuesta.HttpCode = HttpStatusCode.InternalServerError;
                 return respuesta;
             }
-        }
-
-        if (!string.IsNullOrWhiteSpace(registro.DispositivoId))
-        {
-            var dispositivoUsuario = new DispositivoUsuario
-            {
-                UsuarioId = user.Id,
-                DispositivoId = registro.DispositivoId
-            };
-
-            context.DispositivosUsuario.Add(dispositivoUsuario);
-            await context.SaveChangesAsync();
         }
 
         logger.LogDebug("ServicioRegistro-Registro enviando correo de confirmación a {Email}.", registro.Email);

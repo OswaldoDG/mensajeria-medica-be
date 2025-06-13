@@ -374,12 +374,6 @@ namespace mensajeriamedica.services.identity.migrations
                         .IsConcurrencyToken()
                         .HasColumnType("longtext");
 
-                    b.Property<Guid?>("CreadorId")
-                        .HasColumnType("char(36)");
-
-                    b.Property<Guid?>("CuentaFiscalId")
-                        .HasColumnType("char(36)");
-
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("varchar(256)");
@@ -426,9 +420,6 @@ namespace mensajeriamedica.services.identity.migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("longtext");
 
-                    b.Property<int>("TipoCuenta")
-                        .HasColumnType("int");
-
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("tinyint(1)");
 
@@ -446,119 +437,6 @@ namespace mensajeriamedica.services.identity.migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
-                });
-
-            modelBuilder.Entity("mensajeriamedica.model.identity.tokenloginless.TokenLoginLess", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTime>("FechaCreacion")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
-
-                    b.Property<Guid?>("UsuarioCreador")
-                        .IsRequired()
-                        .HasColumnType("char(36)");
-
-                    b.Property<string>("UsuarioId")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Token");
-
-                    b.HasIndex("UsuarioId");
-
-                    b.ToTable("seguridad$tokensloginless", (string)null);
-                });
-
-            modelBuilder.Entity("mensajeriamedica.model.identity.tokenloginless.TokenVinculacion", b =>
-                {
-                    b.Property<string>("DeviceId")
-                        .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
-
-                    b.Property<bool>("Activado")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<DateTime>("Fecha")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("varchar(10)");
-
-                    b.HasKey("DeviceId");
-
-                    b.HasIndex("Token", "Fecha");
-
-                    b.ToTable("seguridad$vinculacion", (string)null);
-                });
-
-            modelBuilder.Entity("mensajeriamedica.model.identity.usuarios.DispositivoUsuario", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("DispositivoId")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
-
-                    b.Property<DateTime>("FechaAsociacion")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("UsuarioId")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UsuarioId");
-
-                    b.ToTable("seguridad$dispusuario", (string)null);
-                });
-
-            modelBuilder.Entity("mensajeriamedica.model.identity.usuarios.RolCuentaFiscal", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<Guid>("CuentaFiscalId")
-                        .HasColumnType("char(36)");
-
-                    b.Property<string>("Roles")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar(250)");
-
-                    b.Property<Guid>("UsuarioId")
-                        .HasColumnType("char(36)");
-
-                    b.HasKey("Id");
-
-                    b.HasAlternateKey("CuentaFiscalId", "UsuarioId");
-
-                    b.HasIndex("CuentaFiscalId", "UsuarioId");
-
-                    b.ToTable("seguridad$usuariosrolcf", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -636,26 +514,6 @@ namespace mensajeriamedica.services.identity.migrations
                     b.Navigation("Authorization");
                 });
 
-            modelBuilder.Entity("mensajeriamedica.model.identity.tokenloginless.TokenLoginLess", b =>
-                {
-                    b.HasOne("mensajeriamedica.model.identity.registro.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("UsuarioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("mensajeriamedica.model.identity.usuarios.DispositivoUsuario", b =>
-                {
-                    b.HasOne("mensajeriamedica.model.identity.registro.ApplicationUser", "Usuario")
-                        .WithMany("DispositivosUsuario")
-                        .HasForeignKey("UsuarioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Usuario");
-                });
-
             modelBuilder.Entity("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreApplication", b =>
                 {
                     b.Navigation("Authorizations");
@@ -666,11 +524,6 @@ namespace mensajeriamedica.services.identity.migrations
             modelBuilder.Entity("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreAuthorization", b =>
                 {
                     b.Navigation("Tokens");
-                });
-
-            modelBuilder.Entity("mensajeriamedica.model.identity.registro.ApplicationUser", b =>
-                {
-                    b.Navigation("DispositivosUsuario");
                 });
 #pragma warning restore 612, 618
         }

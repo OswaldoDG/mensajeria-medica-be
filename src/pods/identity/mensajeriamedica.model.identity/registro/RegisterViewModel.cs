@@ -15,11 +15,5 @@ public class RegisterViewModel
     [DataType(DataType.Password)]
     [Display(Name = "Password")]
     public string Password { get; set; }
-
-    /// <summary>
-    /// Identificador único del dispositivo.
-    /// </summary>
-    [Required]
-    public string DispositivoId { get; set; }
 #pragma warning restore CS8618 // Un campo que no acepta valores NULL debe contener un valor distinto de NULL al salir del constructor. Considere la posibilidad de agregar el modificador "required" o declararlo como un valor que acepta valores NULL.
 }

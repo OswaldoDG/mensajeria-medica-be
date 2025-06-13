@@ -1,34 +1,5 @@
 ﻿namespace mensajeriamedica.model.identity.registro;
 
-[Flags]
-public enum TipoCuenta
-{
-    /// <summary>
-    /// El suario no tiene tipo asignado.
-    /// </summary>
-    None = 0,
-
-    /// <summary>
-    /// El usuario tiene el tipo cliente.
-    /// </summary>
-    Cliente = 1,
-
-    /// <summary>
-    /// El usuario es un empleado de la empresa.
-    /// </summary>
-    Empleado = 2,
-
-    /// <summary>
-    /// El usuario es un empleado de un cliente.
-    /// </summary>
-    EmpleadoCliente = 3,
-
-    /// <summary>
-    /// Son usuarios de un cliente que no hacen login, se autetican con un token
-    /// permanente de acceso.
-    /// </summary>
-    LoginLessCliente = 4
-}
 
 /// <summary>
 /// Esatdo de la cuenta.
