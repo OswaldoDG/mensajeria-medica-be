@@ -19,7 +19,7 @@ public class MensajesController(ILogger<MensajesController> logger,  IServicioMe
     [SwaggerResponse(statusCode: 400, description: "Datos incorrectos")]
     [SwaggerResponse(statusCode: 403, description: "Sin acceso")]
     [SwaggerResponse(statusCode: 401, description: "No autorizado")]
-    public async Task<ActionResult<ResultadoPaginado<DtoMensaje>>> BuscarMensajes ([FromBody] Busqueda busqueda)
+    public async Task<ActionResult<ResultadoPaginado<DtoMensaje>>> BuscarMensajes([FromBody] Busqueda busqueda)
     {
         logger.LogDebug("MensajesController - BuscarMensajes {Payload}", JsonConvert.SerializeObject(busqueda));
         var respuesta = await servicioMensajes.BuscarMensajes(busqueda);

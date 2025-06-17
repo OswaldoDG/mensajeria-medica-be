@@ -18,7 +18,7 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
         builder.CreaConfiguracionStandar(Assembly.GetExecutingAssembly());
-        var connectionString = builder.Configuration.GetConnectionString("contabee-mensajeria");
+        var connectionString = builder.Configuration.GetConnectionString("mensajeria-medica");
 
         builder.Services.AddControllers().AddJsonOptions(options =>
         {
@@ -33,6 +33,7 @@ public class Program
 
         builder.Services.AddHttpClient();
         builder.Services.AddHostedService<ProcesadorArchivos>();
+        builder.Services.AddTransient<IServicioMensajes, ServicioMensajes>();
         builder.Services.AddSingleton<IInterpreteHL7, InterpreteHL7>();
         builder.Services.AddDistributedMemoryCache();
 
