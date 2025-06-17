@@ -6,32 +6,32 @@ public class DtoMensaje
     /// <summary>
     /// Identificador del mensaje.
     /// </summary>
-    public long Id { get; set; } // Clave primaria.
+    public long Id { get; set; }
 
     /// <summary>
     /// FEcha de creación del mensaje.
     /// </summary>
-    public DateTime FechaCreacion { get; set; } // indexar
+    public DateTime FechaCreacion { get; set; }
 
     /// <summary>
     /// Estado del mensaje.
     /// </summary>
-    public EstadoMensaje Estado { get; set; } // indexar
+    public EstadoMensaje Estado { get; set; }
 
     /// <summary>
     /// Teléfono del contacto.
     /// </summary>
-    public string Telefono { get; set; } // maxlen 15
+    public string Telefono { get; set; }
 
     /// <summary>
     /// Nombre del cotnacto.
     /// </summary>
-    public string NombreContacto { get; set; } // maxlen 100
+    public string NombreContacto { get; set; }
 
     /// <summary>
     /// URL para la consulta del estudio.
     /// </summary>
-    public string Url { get; set; } // maxlen 300
+    public string Url { get; set; }
 
     /// <summary>
     /// Identificador del servidor al que pertenece el mensaje.
