@@ -33,8 +33,4 @@
       <ProjectReference Include="..\mensajeriamedica.services.comunicaciones\mensajeriamedica.services.comunicaciones.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Controllers\" />
-    </ItemGroup>
-
 </Project>
