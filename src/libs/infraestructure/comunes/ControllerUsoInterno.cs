@@ -32,6 +32,12 @@ public class ControllerUsoInterno(ILogger logger) : ControllerBase
         get
         {
             string? id = this.UsuarioId;
+#if DEBUG
+            if (string.IsNullOrEmpty(id))
+            {
+                id = Guid.Empty.ToString();
+            }
+#endif
             if (!string.IsNullOrEmpty(id) && Guid.TryParse(id, out var gId))
             {
                 return gId;
@@ -47,19 +53,12 @@ public class ControllerUsoInterno(ILogger logger) : ControllerBase
         {
             try
             {
-                string? jwt = Request?.Headers.Authorization;
-                if (!string.IsNullOrEmpty(jwt) && jwt.IndexOf("Bearer", StringComparison.InvariantCultureIgnoreCase) >= 0)
-                {
-                    var handler = new JwtSecurityTokenHandler();
-                    var jsonToken = handler.ReadToken(jwt.Split(' ')[1]);
-                    var tokenS = jsonToken as JwtSecurityToken;
-                    return tokenS?.Subject;
-                }
+
+                return this.HttpContext.User.FindFirst(x => x.Type == "sub")?.Value;
             }
             catch (Exception ex)
             {
-
-                Console.WriteLine(ex.ToString());
+                logger.LogError(ex, "Error al obtener el SUB {Mensaje}", ex.Message);
             }
 
             return null;
@@ -96,11 +95,12 @@ public class ControllerUsoInterno(ILogger logger) : ControllerBase
 
     protected List<string> Roles()
     {
-        List<string> roles = new List<string>();
+        List<string> roles = [];
         foreach (var rol in Claims.Where(c => c.Type.ToLower() == "role").ToList())
         {
             roles.Add(rol.Value);
         }
+
         return roles;
     }
 
@@ -110,15 +110,8 @@ public class ControllerUsoInterno(ILogger logger) : ControllerBase
         {
             try
             {
-                string? jwt = Request?.Headers.Authorization;
-                if (!string.IsNullOrEmpty(jwt) && jwt.IndexOf("Bearer", StringComparison.InvariantCultureIgnoreCase) >= 0)
-                {
-                    var handler = new JwtSecurityTokenHandler();
-                    var jsonToken = handler.ReadToken(jwt.Split(' ')[1]);
-                    var tokenS = jsonToken as JwtSecurityToken;
-                    return tokenS?.Claims != null ? tokenS.Claims.ToList() : [];
-
-                }
+                var claims = this.HttpContext.User.Claims.ToList();
+                return claims ?? [];
             }
             catch (Exception ex)
             {

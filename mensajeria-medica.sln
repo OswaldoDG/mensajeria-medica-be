@@ -29,6 +29,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "apigateway", "apigateway", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mensajeriamedica.ocelot.gateway", "src\pods\apigateway\mensajeriamedica.ocelot.gateway\mensajeriamedica.ocelot.gateway.csproj", "{A2EA3B54-67DA-811A-4EF8-3EB668DB86BC}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pdf", "pdf", "{C358AE6A-4220-4963-B087-2C3B836320BB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdf.revision.model", "src\pods\pdf\pdf.revision.model\pdf.revision.model.csproj", "{9E691242-F6B7-45DB-9BA9-5A38A60DD6A8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdf.revision.servicios", "pdf.revision.servicios\pdf.revision.servicios.csproj", "{EA85F12C-A7A4-4D9C-AF2F-50C0EE03A1A3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdf.revision.api", "pdf.revision.api\pdf.revision.api.csproj", "{B8A84F78-38AF-4890-9C5E-78C88231FFBF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +75,18 @@ Global
 		{A2EA3B54-67DA-811A-4EF8-3EB668DB86BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A2EA3B54-67DA-811A-4EF8-3EB668DB86BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A2EA3B54-67DA-811A-4EF8-3EB668DB86BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E691242-F6B7-45DB-9BA9-5A38A60DD6A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E691242-F6B7-45DB-9BA9-5A38A60DD6A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E691242-F6B7-45DB-9BA9-5A38A60DD6A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E691242-F6B7-45DB-9BA9-5A38A60DD6A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA85F12C-A7A4-4D9C-AF2F-50C0EE03A1A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA85F12C-A7A4-4D9C-AF2F-50C0EE03A1A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA85F12C-A7A4-4D9C-AF2F-50C0EE03A1A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA85F12C-A7A4-4D9C-AF2F-50C0EE03A1A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8A84F78-38AF-4890-9C5E-78C88231FFBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8A84F78-38AF-4890-9C5E-78C88231FFBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8A84F78-38AF-4890-9C5E-78C88231FFBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8A84F78-38AF-4890-9C5E-78C88231FFBF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -83,6 +103,10 @@ Global
 		{367E88ED-6DD2-450E-B862-5E52E7ECB436} = {6BFBC85E-2668-4986-97AD-BEE3DA9915EB}
 		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {3CCD6E5E-93A4-442C-903A-F55D4F676252}
 		{A2EA3B54-67DA-811A-4EF8-3EB668DB86BC} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{C358AE6A-4220-4963-B087-2C3B836320BB} = {3CCD6E5E-93A4-442C-903A-F55D4F676252}
+		{9E691242-F6B7-45DB-9BA9-5A38A60DD6A8} = {C358AE6A-4220-4963-B087-2C3B836320BB}
+		{EA85F12C-A7A4-4D9C-AF2F-50C0EE03A1A3} = {C358AE6A-4220-4963-B087-2C3B836320BB}
+		{B8A84F78-38AF-4890-9C5E-78C88231FFBF} = {C358AE6A-4220-4963-B087-2C3B836320BB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {64AFEEFA-1867-4412-B78A-AADD8DA06649}
