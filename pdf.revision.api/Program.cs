@@ -1,3 +1,5 @@
+using pdf.revision.servicios.datos;
+using Microsoft.EntityFrameworkCore;
 
 namespace pdf.revision.api
 {
