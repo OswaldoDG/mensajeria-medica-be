@@ -1,3 +1,5 @@
+using pdf.revision.servicios.datos;
+using Microsoft.EntityFrameworkCore;
 
 namespace pdf.revision.api
 {
@@ -6,6 +8,12 @@ namespace pdf.revision.api
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+            builder.Services.AddDbContext<DbContextPdf>(options =>
+                options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+
 
             // Add services to the container.
 
