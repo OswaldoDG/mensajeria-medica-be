@@ -25,13 +25,13 @@ public class DbContextPdf : DbContext
         {
             entity.ToTable("archivo_pdf");
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Nombre).HasColumnName("nombre").IsRequired();
-            entity.Property(e => e.Ruta).HasColumnName("ruta").IsRequired();
-            entity.Property(e => e.Estado).HasColumnName("estado");
-            entity.Property(e => e.UltimaRevision).HasColumnName("ultima_revision");
-            entity.Property(e => e.TotalPaginas).HasColumnName("total_paginas");
-            entity.Property(e => e.Prioridad).HasColumnName("prioridad");
+            entity.Property(e => e.Id);
+            entity.Property(e => e.Nombre).IsRequired();
+            entity.Property(e => e.Ruta).IsRequired();
+            entity.Property(e => e.Estado);
+            entity.Property(e => e.UltimaRevision);
+            entity.Property(e => e.TotalPaginas);
+            entity.Property(e => e.Prioridad);
 
             entity.HasMany(e => e.Partes)
                   .WithOne(p => p.Archivo)
@@ -48,11 +48,11 @@ public class DbContextPdf : DbContext
         {
             entity.ToTable("parte_documental");
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.ArchivoPdfId).HasColumnName("archivo_pdf_id");
-            entity.Property(e => e.PaginaInicio).HasColumnName("pagina_inicio");
-            entity.Property(e => e.PaginaFin).HasColumnName("pagina_fin");
-            entity.Property(e => e.TipoDocumentoId).HasColumnName("tipo_documento_id");
+            entity.Property(e => e.Id);
+            entity.Property(e => e.ArchivoPdfId);
+            entity.Property(e => e.PaginaInicio);
+            entity.Property(e => e.PaginaFin);
+            entity.Property(e => e.TipoDocumentoId);
 
             entity.HasOne(e => e.TipoDocumento)
                   .WithMany(t => t.Partes)
@@ -64,19 +64,19 @@ public class DbContextPdf : DbContext
         {
             entity.ToTable("revision_pdf");
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.FechaInicioRevision).HasColumnName("fecha_inicio_revision");
-            entity.Property(e => e.FechaFinRevision).HasColumnName("fecha_fin_revision");
-            entity.Property(e => e.UsuarioId).HasColumnName("usuario_id");
-            entity.Property(e => e.ArchivoPdfId).HasColumnName("archivo_pdf_id");
+            entity.Property(e => e.Id);
+            entity.Property(e => e.FechaInicioRevision);
+            entity.Property(e => e.FechaFinRevision);
+            entity.Property(e => e.UsuarioId);
+            entity.Property(e => e.ArchivoPdfId);
         });
 
         modelBuilder.Entity<TipoDocumento>(entity =>
         {
             entity.ToTable("tipo_documento");
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Nombre).HasColumnName("nombre").IsRequired();
+            entity.Property(e => e.Id);
+            entity.Property(e => e.Nombre).IsRequired();
         });
     }
 }
