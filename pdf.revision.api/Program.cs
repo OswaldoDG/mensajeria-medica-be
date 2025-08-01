@@ -1,5 +1,6 @@
 using pdf.revision.servicios.datos;
 using Microsoft.EntityFrameworkCore;
+using pdf.revision.servicios;
 
 namespace pdf.revision.api
 {
@@ -21,6 +22,8 @@ namespace pdf.revision.api
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            builder.Services.AddTransient<IServicioPdf, ServicioPdf>();
 
             var app = builder.Build();
 

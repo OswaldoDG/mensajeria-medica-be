@@ -1,4 +1,5 @@
 ﻿using comunes.respuestas;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using pdf.revision.model;
@@ -193,5 +194,90 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db) : IServicioP
             Ok = true,
             HttpCode = HttpStatusCode.OK
         };
+    }
+
+    public async Task<RespuestaPayload<FileContentResult>> DescargaPdfPorId(int id)
+    {
+        RespuestaPayload<FileContentResult> respuesta = new RespuestaPayload<FileContentResult>();
+        try
+        {
+            var archivo = await db.Archivos.FirstAsync(a => a.Id == id);
+
+            if (archivo is null)
+            {
+                respuesta.Error = new ErrorProceso
+                {
+                    Codigo = "ESTADO_INVALIDO",
+                    Mensaje = "El archivo no está en revisión.",
+                    HttpCode = HttpStatusCode.Conflict
+                };
+                return respuesta;
+            }
+
+            var bytes = System.IO.File.ReadAllBytes(archivo.Ruta);
+            var rutaOriginal = Path.GetFileName(archivo.Ruta);
+            string directorio = Path.GetDirectoryName(rutaOriginal);
+            string nombreArchivo = Path.GetFileNameWithoutExtension(rutaOriginal);
+            string extension = Path.GetExtension(rutaOriginal);
+
+            string nuevoNombre = $"{nombreArchivo}_{id}{extension}";
+            string nuevaRuta = Path.Combine(directorio, nuevoNombre);
+
+            respuesta.Payload = new FileContentResult(bytes, "application/pdf")
+            {
+                FileDownloadName = nuevaRuta
+            };
+
+            respuesta.Ok = true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+
+        return respuesta;
+    }
+
+    public async Task<RespuestaPayload<List<DtoArchivos>>> ObtieneTipoDocumentos(DtoTipoDocumento lista)
+    {
+        RespuestaPayload<List<DtoArchivos>> respuesta = new RespuestaPayload<List<DtoArchivos>>();
+        try
+        {
+            var documentos = await db.TiposDocumento
+                .Include(x => x.Partes)
+                .Where(p => lista.Ids.Contains(p.Id))
+                .Select(td => new DtoArchivos
+                {
+                    Id = td.Id,
+                    Nombre = td.Nombre,
+                    Partes = td.Partes.Select(p => new DtoParte
+                    {
+                        Id = p.Id,
+                        PaginaInicio = p.PaginaInicio,
+                        PaginaFin = p.PaginaFin
+                    }).ToList()
+                })
+                .ToListAsync();
+
+            if (lista.Ids.Count == 0)
+            {
+                respuesta.Error = new ErrorProceso()
+                {
+                    Codigo = "No hay Documentos",
+                    Mensaje = "No existen documentos para obtener",
+                    HttpCode = HttpStatusCode.Conflict
+                };
+                return respuesta;
+            }
+
+            respuesta.Ok = true;
+            respuesta.Payload = documentos;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+
+        return respuesta;
     }
 }

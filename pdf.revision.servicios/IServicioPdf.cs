@@ -1,4 +1,5 @@
 ﻿using comunes.respuestas;
+using Microsoft.AspNetCore.Mvc;
 using pdf.revision.model;
 using pdf.revision.model.dtos;
 
@@ -15,6 +16,13 @@ public interface IServicioPdf
     /// <param name="usuarioId">Identificado del usuario en sesion.</param>
     /// <returns>Datos del documento o nulo si no hay pendientes.</returns>
     Task<RespuestaPayload<DtoArchivo>> SiguientePendiente(Guid usuarioId);
+
+    /// <summary>
+    /// Inserta un archivo PDF en el repositorio.
+    /// </summary>
+    /// <param name="id">Ruta del archivo PDF.</param>
+    /// <returns>Datos del documento.</returns>
+    Task<RespuestaPayload<FileContentResult>> DescargaPdfPorId(int id);
 
     /// <summary>
     /// Obtiene el siguiente documento PDF por su id..
@@ -39,4 +47,11 @@ public interface IServicioPdf
     /// </summary>
     /// <returns>Resultado de la operacion.</returns>
     Task<Respuesta> ReiniciaPdfZombies();
+
+    /// <summary>
+    /// Obtiene los tipo documentos del repositorio.
+    /// </summary>
+    /// <param name="ids">Ids de los documentos a obtener.</param>
+    /// <returns>Resultado de la operación.</returns>
+    Task<RespuestaPayload<List<DtoArchivos>>> ObtieneTipoDocumentos(DtoTipoDocumento lista);
 }
