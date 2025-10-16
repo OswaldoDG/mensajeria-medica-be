@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using pdf.revision.model;
 using pdf.revision.model.dtos;
+using pdf.revision.model.dtos.Nuevos;
 using pdf.revision.servicios;
 
 namespace pdf.revision.api.Controllers;
@@ -70,15 +71,16 @@ public class RevisionController(ILogger<RevisionController> logger, IServicioPdf
         return respuesta.Payload!;
     }
 
+
     [HttpGet("tiposDocumento")]
-    public async Task<ActionResult<List<DtoArchivos>>> ObtieneTiposDocumento([FromBody]DtoTipoDocumento lista)
+    public async Task<ActionResult<List<DtoTipoDoc>>> ObtieneTiposDocumento([FromBody]DtoTipoDocumento lista)
     {
         logger.LogInformation("Obteniendo documentos");
 
         if (lista?.Ids == null || lista.Ids.Count == 0)
             return BadRequest("La lista de IDs está vacía.");
 
-        var respuesta = await servicioPdf.ObtieneTipoDocumentos(lista);
+        var respuesta = await servicioPdf.ObtieneTipoDocumentos();
 
         if (!respuesta.Ok)
         {

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using pdf.revision.model;
 using pdf.revision.model.dtos;
+using pdf.revision.model.dtos.Nuevos;
 
 namespace pdf.revision.servicios;
 
@@ -51,7 +52,6 @@ public interface IServicioPdf
     /// <summary>
     /// Obtiene los tipo documentos del repositorio.
     /// </summary>
-    /// <param name="ids">Ids de los documentos a obtener.</param>
     /// <returns>Resultado de la operación.</returns>
-    Task<RespuestaPayload<List<DtoArchivos>>> ObtieneTipoDocumentos(DtoTipoDocumento lista);
+    Task<RespuestaPayload<List<DtoTipoDoc>>> ObtieneTipoDocumentos();
 }

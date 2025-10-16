@@ -1,4 +1,6 @@
-﻿namespace pdf.revision.model;
+﻿using System.Text.Json.Serialization;
+
+namespace pdf.revision.model;
 
 /// <summary>
 /// Tipos de documento que pueden ser revisados.
@@ -18,5 +20,6 @@ public class TipoDocumento
     /// <summary>
     /// Navegacion a la lista de partes que son del tipo documento.
     /// </summary>
+    [JsonIgnore]
     public List<ParteDocumental> Partes { get; set; }
 }

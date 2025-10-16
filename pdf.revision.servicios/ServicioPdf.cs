@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using pdf.revision.model;
 using pdf.revision.model.dtos;
+using pdf.revision.model.dtos.Nuevos;
 using pdf.revision.servicios.datos;
 using System.Net;
 
@@ -238,40 +239,21 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db) : IServicioP
         return respuesta;
     }
 
-    public async Task<RespuestaPayload<List<DtoArchivos>>> ObtieneTipoDocumentos(DtoTipoDocumento lista)
+
+    /// <summary>
+    /// Obtiene la lista de documentos disponibles para la tipificacion.
+    /// </summary>
+    /// <returns>Lista de tipos de documento</returns>
+    public async Task<RespuestaPayload<List<DtoTipoDoc>>> ObtieneTipoDocumentos()
     {
-        RespuestaPayload<List<DtoArchivos>> respuesta = new RespuestaPayload<List<DtoArchivos>>();
+        RespuestaPayload<List<DtoTipoDoc>> respuesta = new RespuestaPayload<List<DtoTipoDoc>>();
         try
         {
-            var documentos = await db.TiposDocumento
-                .Include(x => x.Partes)
-                .Where(p => lista.Ids.Contains(p.Id))
-                .Select(td => new DtoArchivos
-                {
-                    Id = td.Id,
-                    Nombre = td.Nombre,
-                    Partes = td.Partes.Select(p => new DtoParte
-                    {
-                        Id = p.Id,
-                        PaginaInicio = p.PaginaInicio,
-                        PaginaFin = p.PaginaFin
-                    }).ToList()
-                })
-                .ToListAsync();
+            var documentos = await db.TiposDocumento.ToListAsync();
 
-            if (lista.Ids.Count == 0)
-            {
-                respuesta.Error = new ErrorProceso()
-                {
-                    Codigo = "No hay Documentos",
-                    Mensaje = "No existen documentos para obtener",
-                    HttpCode = HttpStatusCode.Conflict
-                };
-                return respuesta;
-            }
-
+            var lista = documentos.Select(d => new DtoTipoDoc() { Nombre =d.Nombre, Id = d.Id }).OrderBy(d => d.Nombre).ToList();   
             respuesta.Ok = true;
-            respuesta.Payload = documentos;
+            respuesta.Payload = lista;
         }
         catch (Exception ex)
         {
