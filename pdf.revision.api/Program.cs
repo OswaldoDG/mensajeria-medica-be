@@ -27,6 +27,9 @@ namespace pdf.revision.api
 
             var app = builder.Build();
 
+
+            Preprocess(app);
+
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
@@ -42,6 +45,13 @@ namespace pdf.revision.api
             app.MapControllers();
 
             app.Run();
+        }
+
+        private static void Preprocess(WebApplication app)
+        {
+            using var scope = app.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<DbContextPdf>();
+            dbContext.Database.Migrate();
         }
     }
 }

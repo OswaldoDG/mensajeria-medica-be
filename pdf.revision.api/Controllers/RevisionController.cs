@@ -1,5 +1,6 @@
 ﻿using Azure.Core;
 using comunes;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using pdf.revision.model;
@@ -72,8 +73,8 @@ public class RevisionController(ILogger<RevisionController> logger, IServicioPdf
     }
 
 
-    [HttpGet("tiposDocumento")]
-    public async Task<ActionResult<List<DtoTipoDoc>>> ObtieneTiposDocumento([FromBody]DtoTipoDocumento lista)
+    [HttpPost("tiposDocumento")]
+    public async Task<ActionResult<List<DtoTipoDoc>>> ObtieneTiposDocumento([FromBody]DtoTipoDocumento  lista)
     {
         logger.LogInformation("Obteniendo documentos");
 
