@@ -1,5 +1,6 @@
 ﻿using Azure.Core;
 using comunes;
+using comunes.respuestas;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -58,28 +59,24 @@ public class RevisionController(ILogger<RevisionController> logger, IServicioPdf
     }
 
     [HttpGet("pdf/{id}")]
-    public async Task<IActionResult> DescargaPdfPorId(int id)
+    public async Task<IActionResult> SiguientePorId(int id)
     {
         logger.LogInformation("Descargando Documento PDF {Id}", id);
 
-        var respuesta = await servicioPdf.DescargaPdfPorId(id);
+        var respuesta = await servicioPdf.SiguientePorId(id, UsuarioGuid!.Value);
 
         if (!respuesta.Ok)
         {
             return ActionFromCode(respuesta!.HttpCode, respuesta.Error!.Codigo);
         }
 
-        return respuesta.Payload!;
+        return Ok(respuesta.Payload);
     }
 
-
-    [HttpPost("tiposDocumento")]
-    public async Task<ActionResult<List<DtoTipoDoc>>> ObtieneTiposDocumento([FromBody]DtoTipoDocumento  lista)
+    [HttpGet("tiposDocumento")]
+    public async Task<ActionResult<List<DtoTipoDoc>>> ObtieneTiposDocumento()
     {
         logger.LogInformation("Obteniendo documentos");
-
-        if (lista?.Ids == null || lista.Ids.Count == 0)
-            return BadRequest("La lista de IDs está vacía.");
 
         var respuesta = await servicioPdf.ObtieneTipoDocumentos();
 
@@ -89,5 +86,18 @@ public class RevisionController(ILogger<RevisionController> logger, IServicioPdf
         }
 
         return respuesta.Payload!;
+    }
+
+    [HttpPost("documentos-blob/{nombreFolder}")]
+    public async Task<IActionResult> PdfsBlobToDataBase([FromRoute] string nombreFolder)
+    {
+        var respuesta = await servicioPdf.PdfsBlobToDataBase(nombreFolder);
+
+        if (!respuesta.Ok)
+        {
+            return ActionFromCode(respuesta!.HttpCode, respuesta.Error!.Codigo);
+        }
+
+        return Ok(respuesta);
     }
 }

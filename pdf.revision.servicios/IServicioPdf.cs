@@ -23,7 +23,7 @@ public interface IServicioPdf
     /// </summary>
     /// <param name="id">Ruta del archivo PDF.</param>
     /// <returns>Datos del documento.</returns>
-    Task<RespuestaPayload<FileContentResult>> DescargaPdfPorId(int id);
+    Task<RespuestaPayload<DtoArchivo>> SiguientePorId(int id, Guid usuarioId);
 
     /// <summary>
     /// Obtiene el siguiente documento PDF por su id..
@@ -41,7 +41,7 @@ public interface IServicioPdf
     /// <param name="totalPaginas">Total de p[aginas del PDF</param>
     /// <param name="usuarioId">Identificado del usuario en sesion.</param>
     /// <returns>OK si el ajuste fue adecuado o false en caso contrario.</returns>
-    Task<Respuesta> CreaPartesPdf(int id, List<ParteDocumental> partes, int totalPaginas, Guid usuarioId);
+    Task<Respuesta> CreaPartesPdf(int id, List<DtoParteDocumental> partes, int totalPaginas, Guid usuarioId);
 
     /// <summary>
     /// Reinicia a estado Pendiente todos los PDFs que se encuentren en estado Zombie (EnRevision sin partes documentales en base a una fecha).
@@ -54,4 +54,10 @@ public interface IServicioPdf
     /// </summary>
     /// <returns>Resultado de la operación.</returns>
     Task<RespuestaPayload<List<DtoTipoDoc>>> ObtieneTipoDocumentos();
+
+    /// <summary>
+    /// Obtiene los pdfs de un blob y los inserta en la tabla de la base de datos.
+    /// </summary>
+    /// <returns>Resultado de la operación.</returns>
+    Task<Respuesta> PdfsBlobToDataBase(string folder);
 }
