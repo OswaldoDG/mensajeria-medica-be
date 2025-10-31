@@ -1,7 +1,12 @@
-﻿using comunes;
+﻿using Azure.Core;
+using comunes;
+using comunes.respuestas;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using pdf.revision.model;
 using pdf.revision.model.dtos;
+using pdf.revision.model.dtos.Nuevos;
 using pdf.revision.servicios;
 
 namespace pdf.revision.api.Controllers;
@@ -40,7 +45,7 @@ public class RevisionController(ILogger<RevisionController> logger, IServicioPdf
     }
 
     [HttpPost("finalizar/{id}")]
-    public async Task<ActionResult<DtoArchivo>> FinalizarPorId(int id, [FromBody] DtoFinalizar dto)
+    public async Task<ActionResult> FinalizarPorId(int id, [FromBody] DtoFinalizar dto)
     {
         logger.LogInformation("Obteniendo el PDF {Id}", id);
         var respuesta = await servicioPdf.CreaPartesPdf(id, dto.Partes, dto.TotalPaginas, UsuarioGuid!.Value);
@@ -54,23 +59,45 @@ public class RevisionController(ILogger<RevisionController> logger, IServicioPdf
     }
 
     [HttpGet("pdf/{id}")]
-    public async Task<IActionResult> DocumentoPdfPorId(int id)
+    public async Task<IActionResult> SiguientePorId(int id)
     {
-        // POR DEFINIR.
+        logger.LogInformation("Descargando Documento PDF {Id}", id);
 
-        //// Ruta física del archivo PDF
-        //var rutaArchivo = Path.Combine("Archivos", $"{nombreArchivo}.pdf");
+        var respuesta = await servicioPdf.SiguientePorId(id, UsuarioGuid!.Value);
 
-        //if (!System.IO.File.Exists(rutaArchivo))
-        //    return NotFound("Archivo no encontrado.");
+        if (!respuesta.Ok)
+        {
+            return ActionFromCode(respuesta!.HttpCode, respuesta.Error!.Codigo);
+        }
 
-        //var stream = new FileStream(rutaArchivo, FileMode.Open, FileAccess.Read);
-        //var mimeType = "application/pdf";
-        //var nombreDescarga = $"{nombreArchivo}.pdf";
+        return Ok(respuesta.Payload);
+    }
 
-        //// Devuelve el archivo como un blob con el tipo MIME de PDF
-        //return File(stream, mimeType, nombreDescarga);
+    [HttpGet("tiposDocumento")]
+    public async Task<ActionResult<List<DtoTipoDoc>>> ObtieneTiposDocumento()
+    {
+        logger.LogInformation("Obteniendo documentos");
 
-        throw new NotImplementedException();
+        var respuesta = await servicioPdf.ObtieneTipoDocumentos();
+
+        if (!respuesta.Ok)
+        {
+            return ActionFromCode(respuesta!.HttpCode, respuesta.Error!.Codigo);
+        }
+
+        return respuesta.Payload!;
+    }
+
+    [HttpPost("documentos-blob/{nombreFolder}")]
+    public async Task<IActionResult> PdfsBlobToDataBase([FromRoute] string nombreFolder)
+    {
+        var respuesta = await servicioPdf.PdfsBlobToDataBase(nombreFolder);
+
+        if (!respuesta.Ok)
+        {
+            return ActionFromCode(respuesta!.HttpCode, respuesta.Error!.Codigo);
+        }
+
+        return Ok(respuesta);
     }
 }

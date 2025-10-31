@@ -15,4 +15,9 @@ public class DtoArchivo
     /// </summary>
     required public string Nombre { get; set; }
 
+    /// <summary>
+    /// TokenSAS del contenedor.
+    /// </summary>
+    public string TokenSAS { get; set; } = string.Empty;
+
 }
