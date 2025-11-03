@@ -52,8 +52,10 @@ public class Program
 
         builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+                .AddJsonFile($"configuration/appsettings.json", optional: true, reloadOnChange: true)
                 .AddUserSecrets(Assembly.GetExecutingAssembly(), true)
                 .AddEnvironmentVariables();
+
         var configuration = builder.Configuration;
 
         ConfiguracionServicioIdentidad configIdentidad = new ();
