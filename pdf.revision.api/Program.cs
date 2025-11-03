@@ -1,6 +1,7 @@
-using pdf.revision.servicios.datos;
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using pdf.revision.servicios;
+using pdf.revision.servicios.datos;
 
 namespace pdf.revision.api
 {
@@ -9,6 +10,12 @@ namespace pdf.revision.api
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            IWebHostEnvironment environment = builder.Environment;
+
+            builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                    .AddJsonFile($"appsettings.{environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+                    .AddUserSecrets(Assembly.GetExecutingAssembly(), true)
+                    .AddEnvironmentVariables();
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
