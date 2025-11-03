@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using Azure.Monitor.OpenTelemetry.AspNetCore;
+﻿using Azure.Monitor.OpenTelemetry.AspNetCore;
 using comunes.autenticacion;
 using comunes.autenticacion.abstraccion;
 using comunes.proxies.proxygenerico;
@@ -11,6 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OpenIddict.Validation.AspNetCore;
 using Serilog;
+using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 
 namespace comunes.extensiones;
 
@@ -53,18 +54,54 @@ public static class ExtensionesConfiguracionInterservicio
     public static void InyectaOpenIdDict(this IServiceCollection services, ConfigurationManager configuration)
     {
 
-        ConfiguracionConsul configuracionConsul = new ();
+        ConfiguracionConsul configuracionConsul = new();
+        var jwtAuthorities = configuration.GetSection("JwtAuthorities").Get<List<JwtAuthorityConfiguration>>();
+        List<string> issuers = jwtAuthorities?.Select(a => a.Authority.TrimEnd('/')).ToList() ?? [];
         configuration.GetSection("ConfiguracionConsul").Bind(configuracionConsul);
 
-        services.AddOpenIddict()
-            .AddValidation(options =>
+        if (!string.IsNullOrEmpty(configuracionConsul.CertificadoCifradoIdentity) && File.Exists(configuracionConsul.CertificadoCifradoIdentity))
+        {
+            X509Certificate2 encryptCert = new(configuracionConsul.CertificadoCifradoIdentity);
+            foreach (var issuer in issuers)
             {
-                options.SetIssuer(configuracionConsul.UrlIdentity);
-                options.UseSystemNetHttp();
-                options.UseAspNetCore();
+                services.AddOpenIddict()
+                    .AddValidation(options =>
+                    {
+                        options.AddEncryptionCertificate(encryptCert);
+                        options.SetIssuer(issuer);
+                        options.UseSystemNetHttp();
+                        options.UseAspNetCore();
+                    });
+            }
+        }
+        else
+        {
+            foreach (var issuer in issuers)
+            {
+                services.AddOpenIddict()
+                .AddValidation(options =>
+                {
+                    options.SetIssuer(issuer);
+                    options.UseSystemNetHttp();
+                    options.UseAspNetCore();
+                });
+            }
+        }
+
+        services.AddAuthorizationBuilder()
+            .AddPolicy("InternalScope", policy =>
+            {
+                policy.AuthenticationSchemes = new[] { "Bearer" };
+                policy.RequireAuthenticatedUser();
+                policy.RequireClaim("scope", "internal");
             });
 
-        services.AddAuthentication(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+
+        services.AddAuthentication(options =>
+        {
+            options.DefaultScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
+
+        });
     }
 
     /// <summary>
@@ -125,10 +162,18 @@ public static class ExtensionesConfiguracionInterservicio
     {
         IWebHostEnvironment environment = builder.Environment;
 
+#if DEBUG
         builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                             .AddJsonFile($"appsettings.{environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
                             .AddUserSecrets(rootAssembly, true)
                             .AddEnvironmentVariables();
+#else
+        builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                            .AddJsonFile($"configuration/appsettings.json", optional: true, reloadOnChange: true)
+                            .AddJsonFile($"configuration/appsettings-common.json", optional: true, reloadOnChange: true)
+                            .AddUserSecrets(rootAssembly, true)
+                            .AddEnvironmentVariables();
+#endif
 
         builder.Services.AddLogging(logbuilder =>
         {

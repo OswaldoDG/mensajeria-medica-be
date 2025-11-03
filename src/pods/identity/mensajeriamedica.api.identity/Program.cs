@@ -215,9 +215,18 @@ public class Program
 
         var app = builder.Build();
 
-        using var scope = app.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<DbContextIdentity>();
-        dbContext.Database.Migrate();
+        try
+        {
+            using var scope = app.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<DbContextIdentity>();
+            dbContext.Database.Migrate();
+
+        }
+        catch (Exception ex)
+        {
+
+            Console.WriteLine($"Error aplicando migraciones de base de datos: {ex}");   
+        }
 
         app.UseRouting();
         app.UseCors("default");

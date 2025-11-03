@@ -5,6 +5,7 @@ using mensajeriamedica.services.identity.registro;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using OpenIddict.Validation.AspNetCore;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -12,7 +13,7 @@ namespace mensajeriamedica.api.identity.Controllers;
 [ApiController]
 [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
 #pragma warning disable S6934 // A Route attribute should be added to the controller when a route template is specified at the action level
-public class AccountController(ILogger<AccountController> logger, IServicioRegistro servicioRegistro, UserManager<ApplicationUser> userManager) : ControllerUsoInterno(logger)
+public class AccountController(ILogger<AccountController> logger, IServicioRegistro servicioRegistro, UserManager<ApplicationUser> userManager, IConfiguration configuration) : ControllerUsoInterno(logger)
 #pragma warning restore S6934 // A Route attribute should be added to the controller when a route template is specified at the action level
 {
     [SwaggerOperation("Registra un nuevo usuario")]
@@ -23,6 +24,12 @@ public class AccountController(ILogger<AccountController> logger, IServicioRegis
     [AllowAnonymous]
     public async Task<ActionResult> Registro([FromBody] RegisterViewModel registro)
     {
+
+        if(registro.Code != configuration.GetValue<string>("CodigoRegistro"))
+        {
+            return BadRequest("Código de registro erróneo");
+        }
+
         logger.LogDebug("AccountController-Registro");
         var result = await servicioRegistro.Registro(registro);
 

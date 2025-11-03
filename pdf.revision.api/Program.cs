@@ -1,4 +1,5 @@
 using System.Reflection;
+using comunes.extensiones;
 using Microsoft.EntityFrameworkCore;
 using pdf.revision.servicios;
 using pdf.revision.servicios.datos;
@@ -12,10 +13,7 @@ namespace pdf.revision.api
             var builder = WebApplication.CreateBuilder(args);
             IWebHostEnvironment environment = builder.Environment;
 
-            builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                    .AddJsonFile($"appsettings.{environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-                    .AddUserSecrets(Assembly.GetExecutingAssembly(), true)
-                    .AddEnvironmentVariables();
+            builder.CreaConfiguracionStandar(Assembly.GetExecutingAssembly());
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -56,9 +54,17 @@ namespace pdf.revision.api
 
         private static void Preprocess(WebApplication app)
         {
-            using var scope = app.Services.CreateScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<DbContextPdf>();
-            dbContext.Database.Migrate();
+            try
+            {
+                using var scope = app.Services.CreateScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<DbContextPdf>();
+                dbContext.Database.Migrate();
+
+            }
+            catch (Exception)
+            {
+
+            }
         }
     }
 }

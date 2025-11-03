@@ -60,4 +60,11 @@ public interface IServicioPdf
     /// </summary>
     /// <returns>Resultado de la operación.</returns>
     Task<Respuesta> PdfsBlobToDataBase(string folder);
+
+    /// <summary>
+    /// Obtiene las estadisticas de un usuario.
+    /// </summary>
+    /// <param name="id">Id del usaurio.</param>
+    /// <returns>Estadisticas.</returns>
+    Task<List<DtoEstadisticasUsuario>> ObtieneEstadisticasUsuario(Guid id);
 }

@@ -1,10 +1,6 @@
-﻿using Azure.Core;
-using comunes;
-using comunes.respuestas;
+﻿using comunes;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using pdf.revision.model;
 using pdf.revision.model.dtos;
 using pdf.revision.model.dtos.Nuevos;
 using pdf.revision.servicios;
@@ -12,9 +8,19 @@ using pdf.revision.servicios;
 namespace pdf.revision.api.Controllers;
 
 [Route("revision")]
+[Authorize]
 [ApiController]
 public class RevisionController(ILogger<RevisionController> logger, IServicioPdf servicioPdf) : ControllerUsoInterno(logger)
 {
+
+    [HttpGet("misestadisticas")]
+    public async Task<ActionResult<DtoArchivo>> MisEstadisticas()
+    {
+        logger.LogInformation("Obteniendo estadisticas del usuario.");
+        var respuesta = await servicioPdf.ObtieneEstadisticasUsuario(UsuarioGuid!.Value);
+
+        return Ok(respuesta);
+    }
 
     [HttpGet("siguiente")]
     public async Task<ActionResult<DtoArchivo>> SiguientePendiente()

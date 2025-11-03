@@ -19,7 +19,7 @@
         "urlIdentity": "https://localhost:8005"
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "https://*:7001;http://*:7000"
+      "applicationUrl": "https://*:9001;http://*:9000"
     },
     "IIS Express": {
       "commandName": "IISExpress",

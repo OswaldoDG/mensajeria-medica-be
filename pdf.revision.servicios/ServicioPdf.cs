@@ -48,6 +48,8 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
         };
     }
 
+
+
     public async Task<RespuestaPayload<DtoArchivo>> SiguientePendiente(Guid usuarioId)
     {
         // 1. debe obtener de la  base de datos el siguiente elemento en estado Pendiente ordenando por prioridad descencendete.
@@ -402,5 +404,31 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
         Uri sasUri = blobClient.GenerateSasUri(sasBuilder);
 
         return sasUri.ToString();
+    }
+
+    public async Task<List<DtoEstadisticasUsuario>> ObtieneEstadisticasUsuario(Guid id)
+    {
+        List<DtoEstadisticasUsuario> lista = [];
+        var sevenDaysAgo = DateTime.Today.AddDays(-6); // Includes today
+        var groupedCounts = await db.Revisiones.Where(r => r.UsuarioId == id && r.FechaInicioRevision >= sevenDaysAgo && r.FechaInicioRevision <= DateTime.Today)
+            .GroupBy(r => r.FechaInicioRevision.Date)
+            .Select(g => new
+            {
+                Date = g.Key,
+                Count = g.Count()
+            })
+            .OrderBy(g => g.Date)
+            .ToListAsync();
+
+        foreach (var i in groupedCounts)
+        {
+            lista.Add( new DtoEstadisticasUsuario
+            {
+                Fecha = i.Date,
+                Conteo = i.Count
+            });
+        }
+
+        return lista;
     }
 }
