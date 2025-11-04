@@ -14,7 +14,7 @@ public class RevisionController(ILogger<RevisionController> logger, IServicioPdf
 {
 
     [HttpGet("misestadisticas")]
-    public async Task<ActionResult<DtoArchivo>> MisEstadisticas()
+    public async Task<ActionResult<List<DtoEstadisticasUsuario>>> MisEstadisticas()
     {
         logger.LogInformation("Obteniendo estadisticas del usuario.");
         var respuesta = await servicioPdf.ObtieneEstadisticasUsuario(UsuarioGuid!.Value);
