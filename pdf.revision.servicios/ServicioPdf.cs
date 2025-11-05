@@ -409,8 +409,13 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
     public async Task<List<DtoEstadisticasUsuario>> ObtieneEstadisticasUsuario(Guid id)
     {
         List<DtoEstadisticasUsuario> lista = [];
-        var sevenDaysAgo = DateTime.Today.AddDays(-6); // Includes today
-        var groupedCounts = await db.Revisiones.Where(r => r.UsuarioId == id && r.FechaInicioRevision >= sevenDaysAgo && r.FechaInicioRevision <= DateTime.Today)
+        var sevenDaysAgo = DateTime.Today.AddDays(-6);
+        var tomorrow = DateTime.Today.AddDays(1);
+
+        var groupedCounts = await db.Revisiones
+            .Where(r => r.UsuarioId == id &&
+                        r.FechaInicioRevision >= sevenDaysAgo &&
+                        r.FechaInicioRevision < tomorrow)
             .GroupBy(r => r.FechaInicioRevision.Date)
             .Select(g => new
             {
