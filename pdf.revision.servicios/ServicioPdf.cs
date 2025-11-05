@@ -58,12 +58,13 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
         // 2. debe actualizar el estado del elemento a EnRevisionvy establecer UltimaRevision = DateTime.UtcNow.
         // 3. debe insertar un nuevo elemento  RevisionPdf con el id del usuario en sesion y el id del archivo.
         // 4. debe retornar el elemento obtenido en el paso 1 convertido a DtoArchivo y estado 200.
+
+
+        await ReiniciaPdfZombies();
         var archivo = await db.Archivos.Where(a => a.Estado == EstadoRevision.Pendiente).OrderByDescending(a => a.Prioridad).FirstOrDefaultAsync();
 
         if (archivo is null)
         {
-            await ReiniciaPdfZombies();
-
             archivo = await db.Archivos.Where(a => a.Estado == EstadoRevision.Pendiente).OrderByDescending(a => a.Prioridad).FirstOrDefaultAsync();
 
             if (archivo is null)
