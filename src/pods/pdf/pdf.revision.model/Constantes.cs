@@ -20,5 +20,10 @@ public enum EstadoRevision
     /// <summary>
     /// Revision cancelada.
     /// </summary>
-    Cancelada = 3
+    Cancelada = 3,
+
+    /// <summary>
+    /// Indica que el archivo ha sido separado en varios PDFs.
+    /// </summary>
+    SeparadoEnPdfs = 4
 }
