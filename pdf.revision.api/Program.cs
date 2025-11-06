@@ -21,6 +21,8 @@ namespace pdf.revision.api
                 options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
 
+            builder.Services.AddMemoryCache();
+
             // Add services to the container.
 
             builder.Services.AddControllers();

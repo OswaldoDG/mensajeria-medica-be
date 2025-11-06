@@ -1,9 +1,13 @@
-﻿using Azure.Storage.Blobs;
+﻿using System.Net;
+using System.Text.Json;
+using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Sas;
 using comunes.respuestas;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using pdf.revision.model;
@@ -11,11 +15,10 @@ using pdf.revision.model.dtos;
 using pdf.revision.model.dtos.Nuevos;
 using pdf.revision.servicios.datos;
 using Polly;
-using System.Net;
 
 namespace pdf.revision.servicios;
 
-public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfiguration configuration) : IServicioPdf
+public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfiguration configuration, IDistributedCache cache) : IServicioPdf
 {
     private readonly string connectionString = configuration!.GetValue<string>("azure:blob:connectionString")!;
     private readonly string containerpdfs = configuration!.GetValue<string>("azure:blob:containerpdfs")!;
@@ -410,31 +413,70 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
     public async Task<List<DtoEstadisticasUsuario>> ObtieneEstadisticasUsuario(Guid id)
     {
         List<DtoEstadisticasUsuario> lista = [];
-        var sevenDaysAgo = DateTime.Today.AddDays(-6);
-        var tomorrow = DateTime.Today.AddDays(1);
-
-        var groupedCounts = await db.Revisiones
-            .Where(r => r.UsuarioId == id &&
-                        r.FechaInicioRevision >= sevenDaysAgo &&
-                        r.FechaInicioRevision < tomorrow)
-            .GroupBy(r => r.FechaInicioRevision.Date)
-            .Select(g => new
-            {
-                Date = g.Key,
-                Count = g.Count()
-            })
-            .OrderBy(g => g.Date)
-            .ToListAsync();
-
-        foreach (var i in groupedCounts)
+        string? cached = await cache.GetStringAsync(id.ToString());
+        if (!string.IsNullOrEmpty(cached))
         {
-            lista.Add( new DtoEstadisticasUsuario
+            lista = JsonSerializer.Deserialize<List<DtoEstadisticasUsuario>>(cached)!;
+        }
+        else
+        {
+            TimeZoneInfo gmtMinus6 = TimeZoneInfo.CreateCustomTimeZone("GMT-6", TimeSpan.FromHours(-6), "GMT-6", "GMT-6");
+
+
+            var allRows = await db.Revisiones
+                .Join(db.Archivos,
+                      revisiones => revisiones.ArchivoPdfId,
+                      archivos => archivos.Id,
+                      (revision, archivo) => new Counter()
+                      {
+                          Estado = archivo.Estado,
+                          Fecha = revision.FechaInicioRevision,
+                          UsuarioId = revision.UsuarioId
+                      })
+                .Where(x => x.Fecha > DateTime.UtcNow.AddDays(-6) && x.Fecha <= DateTime.UtcNow
+                && x.UsuarioId == id
+                && (x.Estado == EstadoRevision.Finalizada || x.Estado == EstadoRevision.SeparadoEnPdfs))
+                .ToListAsync();
+
+            if (allRows.Any())
             {
-                Fecha = i.Date,
-                Conteo = i.Count
+                foreach(var  i in allRows)
+                {
+                    i.Fecha = TimeZoneInfo.ConvertTimeFromUtc(i.Fecha, gmtMinus6).Date;
+                }
+
+                var groupedCounts = allRows.GroupBy(r => r.Fecha.Date)
+                 .Select(g => new
+                 {
+                     Date = g.Key,
+                     Count = g.Count()
+                 })
+                 .OrderBy(g => g.Date)
+                 .ToList();
+
+                foreach (var i in groupedCounts)
+                {
+                    lista.Add(new DtoEstadisticasUsuario
+                    {
+                        Fecha = i.Date,
+                        Conteo = i.Count
+                    });
+                }
+            }
+
+            await cache.SetStringAsync(id.ToString(), JsonSerializer.Serialize(lista), new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
             });
         }
 
         return lista;
     }
+
+
+    private class Counter() {         
+        public DateTime Fecha { get; set; }
+        public Guid UsuarioId { get; set; }
+        public EstadoRevision Estado { get; set; }
+    }       
 }
