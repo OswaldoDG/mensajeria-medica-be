@@ -414,28 +414,35 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
     {
         List<DtoEstadisticasUsuario> lista = [];
         string? cached = await cache.GetStringAsync(id.ToString());
-        if (!string.IsNullOrEmpty(cached))
+        if (!string.IsNullOrEmpty(cached) && cached != "[]")
         {
             lista = JsonSerializer.Deserialize<List<DtoEstadisticasUsuario>>(cached)!;
         }
         else
         {
+            await cache.RemoveAsync(id.ToString());
+
             TimeZoneInfo gmtMinus6 = TimeZoneInfo.CreateCustomTimeZone("GMT-6", TimeSpan.FromHours(-6), "GMT-6", "GMT-6");
 
 
+            var start = DateTime.UtcNow.Date.AddDays(-6);
+            var end = DateTime.UtcNow.Date.AddDays(1);
+
             var allRows = await db.Revisiones
                 .Join(db.Archivos,
-                      revisiones => revisiones.ArchivoPdfId,
-                      archivos => archivos.Id,
-                      (revision, archivo) => new Counter()
-                      {
-                          Estado = archivo.Estado,
-                          Fecha = revision.FechaInicioRevision,
-                          UsuarioId = revision.UsuarioId
-                      })
-                .Where(x => x.Fecha > DateTime.UtcNow.AddDays(-6) && x.Fecha <= DateTime.UtcNow
-                && x.UsuarioId == id
-                && (x.Estado == EstadoRevision.Finalizada || x.Estado == EstadoRevision.SeparadoEnPdfs))
+                    revisiones => revisiones.ArchivoPdfId,
+                    archivos => archivos.Id,
+                    (revision, archivo) => new Counter
+                    {
+                        Estado = archivo.Estado,
+                        Fecha = revision.FechaInicioRevision,
+                        UsuarioId = revision.UsuarioId
+                    })
+                .Where(x => x.Fecha >= start
+                         && x.Fecha < end
+                         && x.UsuarioId == id
+                         && (x.Estado == EstadoRevision.Finalizada
+                          || x.Estado == EstadoRevision.SeparadoEnPdfs))
                 .ToListAsync();
 
             if (allRows.Any())
@@ -464,10 +471,13 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
                 }
             }
 
-            await cache.SetStringAsync(id.ToString(), JsonSerializer.Serialize(lista), new DistributedCacheEntryOptions
+            if (lista.Any())
             {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
-            });
+                await cache.SetStringAsync(id.ToString(), JsonSerializer.Serialize(lista), new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
+                });
+            }
         }
 
         return lista;
