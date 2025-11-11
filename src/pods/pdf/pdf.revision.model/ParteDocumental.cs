@@ -34,6 +34,11 @@ public class ParteDocumental
     public int TipoDocumentoId { get; set; }
 
     /// <summary>
+    /// Especifica si el elemento pertenee a un grupo.
+    /// </summary>
+    public int? IdAgrupamiento { get; set; }
+
+    /// <summary>
     /// Navegacion Archivo.
     /// </summary>
     public ArchivoPdf Archivo { get; set; }

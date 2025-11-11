@@ -175,7 +175,8 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
                 ArchivoPdfId = archivo.Id,
                 PaginaInicio = dtoParte.PaginaInicio,
                 PaginaFin = dtoParte.PaginaFin,
-                TipoDocumentoId = dtoParte.TipoDocumentoId
+                TipoDocumentoId = dtoParte.TipoDocumentoId,
+                IdAgrupamiento = dtoParte.IdAgrupamiento
             };
 
             archivo.Partes.Add(parte);
