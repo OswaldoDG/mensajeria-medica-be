@@ -115,13 +115,6 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
 
     public async Task<Respuesta> CreaPartesPdf(int id, List<DtoParteDocumental> partes, int totalPaginas, Guid usuarioId)
     {
-        // 1. debe obtener de la base de datos el elemento con el id indicado.
-        //  1.1 Si el archivo no existe debe devolver las Respuesta con estado 404.
-        //  1.2 Si el elemento no esta en estado EnRevision, debe retornar un Respuesta con estado 409.
-        //  1.3 si el numero de partes es cero o si el total de paginas no es un entero positico devolver 409.
-        // 2. Si esta en revision debe insertar todas las partes documentales y actualziar el TotalPaginas con el valor enviado.
-        // 3. Debe obtener la revision mas reciente para el usuarioIdde RevisionPdf y actualizar FechaFinRevision DateTime.UtcNow.
-        // 3. Debe actualizar el estado del elemento a Revisado y devolver 200.
         var archivo = await db.Archivos
             .Include(a => a.Partes)
             .FirstOrDefaultAsync(a => a.Id == id);
@@ -152,34 +145,24 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
             };
         }
 
-        if (partes.Count == 0 || totalPaginas <= 0)
+        if (partes.Count > 0 )
         {
-            return new Respuesta
+            if (archivo.Partes == null)
+                archivo.Partes = new List<ParteDocumental>();
+
+            foreach (var dtoParte in partes)
             {
-                Error = new ErrorProceso
+                var parte = new ParteDocumental
                 {
-                    Codigo = "DATOS_INVALIDOS",
-                    Mensaje = "Debe proporcionar partes válidas y un número de páginas mayor a cero.",
-                    HttpCode = HttpStatusCode.Conflict
-                }
-            };
-        }
+                    ArchivoPdfId = archivo.Id,
+                    PaginaInicio = dtoParte.PaginaInicio,
+                    PaginaFin = dtoParte.PaginaFin,
+                    TipoDocumentoId = dtoParte.TipoDocumentoId,
+                    IdAgrupamiento = dtoParte.IdAgrupamiento
+                };
 
-        if (archivo.Partes == null)
-            archivo.Partes = new List<ParteDocumental>();
-
-        foreach (var dtoParte in partes)
-        {
-            var parte = new ParteDocumental
-            {
-                ArchivoPdfId = archivo.Id,
-                PaginaInicio = dtoParte.PaginaInicio,
-                PaginaFin = dtoParte.PaginaFin,
-                TipoDocumentoId = dtoParte.TipoDocumentoId,
-                IdAgrupamiento = dtoParte.IdAgrupamiento
-            };
-
-            archivo.Partes.Add(parte);
+                archivo.Partes.Add(parte);
+            }
         }
 
         archivo.TotalPaginas = totalPaginas;
@@ -415,79 +398,51 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
     {
         List<DtoEstadisticasUsuario> lista = [];
         string? cached = await cache.GetStringAsync(id.ToString());
+
         if (!string.IsNullOrEmpty(cached) && cached != "[]")
         {
             lista = JsonSerializer.Deserialize<List<DtoEstadisticasUsuario>>(cached)!;
         }
         else
         {
-            await cache.RemoveAsync(id.ToString());
+            string baseSQl = "SELECT r.FechaFinRevision, r.ArchivoPdfId FROM pdfsplit.revision_pdf r" +
+           " inner join pdfsplit.archivo_pdf a on r.ArchivoPdfId = a.Id where r.FechaFinRevision is not null " +
+           " and (a.Estado = 4 or a.Estado = 2 ) and r.UsuarioId = '-UID-' and CONVERT_TZ(r.FechaFinRevision, '+00:00', '-06:00') " +
+           " BETWEEN UTC_TIMESTAMP() - INTERVAL 7 DAY AND UTC_TIMESTAMP();";
 
+            string query = baseSQl.Replace("-UID-", id.ToString());
+
+            List<DtoEstadistica> allRows = await db.Set<DtoEstadistica>().FromSqlRaw(query).ToListAsync();
             TimeZoneInfo gmtMinus6 = TimeZoneInfo.CreateCustomTimeZone("GMT-6", TimeSpan.FromHours(-6), "GMT-6", "GMT-6");
 
-
-            var start = DateTime.UtcNow.Date.AddDays(-6);
-            var end = DateTime.UtcNow.Date.AddDays(1);
-
-            var allRows = await db.Revisiones
-                .Join(db.Archivos,
-                    revisiones => revisiones.ArchivoPdfId,
-                    archivos => archivos.Id,
-                    (revision, archivo) => new Counter
-                    {
-                        Estado = archivo.Estado,
-                        Fecha = revision.FechaInicioRevision,
-                        UsuarioId = revision.UsuarioId
-                    })
-                .Where(x => x.Fecha >= start
-                         && x.Fecha < end
-                         && x.UsuarioId == id
-                         && (x.Estado == EstadoRevision.Finalizada
-                          || x.Estado == EstadoRevision.SeparadoEnPdfs))
-                .ToListAsync();
-
-            if (allRows.Any())
+            foreach (var item in allRows)
             {
-                foreach(var  i in allRows)
-                {
-                    i.Fecha = TimeZoneInfo.ConvertTimeFromUtc(i.Fecha, gmtMinus6).Date;
-                }
-
-                var groupedCounts = allRows.GroupBy(r => r.Fecha.Date)
-                 .Select(g => new
-                 {
-                     Date = g.Key,
-                     Count = g.Count()
-                 })
-                 .OrderBy(g => g.Date)
-                 .ToList();
-
-                foreach (var i in groupedCounts)
-                {
-                    lista.Add(new DtoEstadisticasUsuario
-                    {
-                        Fecha = i.Date,
-                        Conteo = i.Count
-                    });
-                }
+                item.FechaFinRevision = TimeZoneInfo.ConvertTimeFromUtc(item.FechaFinRevision, gmtMinus6).Date;
             }
 
-            if (lista.Any())
+            var groupedCounts = allRows.GroupBy(r => r.FechaFinRevision.Date)
+                    .Select(g => new
+                    {
+                        Date = g.Key,
+                        Count = g.Count()
+                    })
+                    .OrderBy(g => g.Date)
+                    .ToList();
+
+            foreach (var i in groupedCounts)
             {
-                await cache.SetStringAsync(id.ToString(), JsonSerializer.Serialize(lista), new DistributedCacheEntryOptions
+                lista.Add(new DtoEstadisticasUsuario
                 {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
+                    Fecha = i.Date,
+                    Conteo = i.Count
                 });
             }
-        }
 
+            await cache.SetStringAsync(id.ToString(), JsonSerializer.Serialize(lista), new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
+            });
+        }
         return lista;
     }
-
-
-    private class Counter() {         
-        public DateTime Fecha { get; set; }
-        public Guid UsuarioId { get; set; }
-        public EstadoRevision Estado { get; set; }
-    }       
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using pdf.revision.model;
+using pdf.revision.model.dtos;
 
 namespace pdf.revision.servicios.datos;
 
@@ -14,12 +15,18 @@ public class DbContextPdf : DbContext
     public DbSet<ParteDocumental> PartesArchivo { get; set; }
     public DbSet<RevisionPdf> Revisiones { get; set; }
 
+    public DbSet<DtoEstadistica> Estadisticas { get; set; }
     public DbContextPdf()
     {
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        //modelBuilder.Ignore<DtoEstadistica>();
+
+        modelBuilder.Entity<DtoEstadistica>().HasNoKey().ToView(null);
+
+
         // Definir la configuracion por tipo de entidad y crear la migracion.
         modelBuilder.Entity<ArchivoPdf>(entity =>
         {
