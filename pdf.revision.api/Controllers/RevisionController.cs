@@ -18,7 +18,7 @@ public class RevisionController(ILogger<RevisionController> logger, IServicioPdf
     public async Task<ActionResult<List<DtoEstadisticasUsuarioDate>>> MisEstadisticas()
     {
         logger.LogInformation("Obteniendo estadisticas del usuario.");
-        var respuesta = await servicioPdf.ObtieneEstadisticasUsuario(Guid.Parse("57f1b99e-f00a-48ce-8145-828e4b407e6e"));
+        var respuesta = await servicioPdf.ObtieneEstadisticasUsuario(UsuarioGuid!.Value);
 
         return Ok(respuesta);
     }
