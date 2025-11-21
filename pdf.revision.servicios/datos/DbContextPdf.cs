@@ -25,6 +25,7 @@ public class DbContextPdf : DbContext
         //modelBuilder.Ignore<DtoEstadistica>();
 
         modelBuilder.Entity<DtoEstadistica>().HasNoKey().ToView(null);
+        modelBuilder.Entity<DtoEstadisticasUsuario>().HasNoKey().ToView(null);
 
 
         // Definir la configuracion por tipo de entidad y crear la migracion.

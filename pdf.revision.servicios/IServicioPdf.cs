@@ -66,5 +66,5 @@ public interface IServicioPdf
     /// </summary>
     /// <param name="id">Id del usaurio.</param>
     /// <returns>Estadisticas.</returns>
-    Task<List<DtoEstadisticasUsuario>> ObtieneEstadisticasUsuario(Guid id);
+    Task<List<DtoEstadisticasUsuarioDate>> ObtieneEstadisticasUsuario(Guid id);
 }

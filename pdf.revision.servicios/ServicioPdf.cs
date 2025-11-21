@@ -394,55 +394,74 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
         return sasUri.ToString();
     }
 
-    public async Task<List<DtoEstadisticasUsuario>> ObtieneEstadisticasUsuario(Guid id)
+    public async Task<List<DtoEstadisticasUsuarioDate>> ObtieneEstadisticasUsuario(Guid id)
     {
-        List<DtoEstadisticasUsuario> lista = [];
+        List<DtoEstadisticasUsuarioDate> lista = [];
         string? cached = await cache.GetStringAsync(id.ToString());
 
         if (!string.IsNullOrEmpty(cached) && cached != "[]")
         {
-            lista = JsonSerializer.Deserialize<List<DtoEstadisticasUsuario>>(cached)!;
+            lista = JsonSerializer.Deserialize<List<DtoEstadisticasUsuarioDate>>(cached)!;
         }
         else
         {
-            string baseSQl = "SELECT r.FechaFinRevision, r.ArchivoPdfId FROM pdfsplit.revision_pdf r" +
-           " inner join pdfsplit.archivo_pdf a on r.ArchivoPdfId = a.Id where r.FechaFinRevision is not null " +
-           " and (a.Estado = 4 or a.Estado = 2 ) and r.UsuarioId = '-UID-' and CONVERT_TZ(r.FechaFinRevision, '+00:00', '-06:00') " +
-           " BETWEEN UTC_TIMESTAMP() - INTERVAL 7 DAY AND UTC_TIMESTAMP();";
+            string sql = @"select DATE_FORMAT(r.FechaInicioRevision , '%d-%m-%Y') as Fecha, count(r.usuarioid)  as Conteo
+from pdfsplit.revision_pdf r 
+join aspnetusers u on r.UsuarioId = u.Id
+where
+r.UsuarioId = '-UID-' and
+r.FechaInicioRevision BETWEEN UTC_TIMESTAMP() - INTERVAL 16 DAY AND UTC_TIMESTAMP()
+group by DATE_FORMAT(r.FechaInicioRevision , '%d-%m-%Y')
+order by DATE_FORMAT(r.FechaInicioRevision , '%d-%m-%Y')";
 
-            string query = baseSQl.Replace("-UID-", id.ToString());
+           // string baseSQl = "SELECT r.FechaFinRevision, r.ArchivoPdfId FROM pdfsplit.revision_pdf r" +
+           //" inner join pdfsplit.archivo_pdf a on r.ArchivoPdfId = a.Id where r.FechaFinRevision is not null " +
+           //" and (a.Estado = 4 or a.Estado = 2 ) and r.UsuarioId = '-UID-' and CONVERT_TZ(r.FechaFinRevision, '+00:00', '-06:00') " +
+           //" BETWEEN UTC_TIMESTAMP() - INTERVAL 7 DAY AND UTC_TIMESTAMP();";
 
-            List<DtoEstadistica> allRows = await db.Set<DtoEstadistica>().FromSqlRaw(query).ToListAsync();
+            string query = sql.Replace("-UID-", id.ToString());
+
+           var  rows = await db.Set<DtoEstadisticasUsuario>().FromSqlRaw(query).ToListAsync();
             TimeZoneInfo gmtMinus6 = TimeZoneInfo.CreateCustomTimeZone("GMT-6", TimeSpan.FromHours(-6), "GMT-6", "GMT-6");
 
-            foreach (var item in allRows)
+            foreach (var item in rows)
             {
-                item.FechaFinRevision = TimeZoneInfo.ConvertTimeFromUtc(item.FechaFinRevision, gmtMinus6).Date;
-            }
-
-            var groupedCounts = allRows.GroupBy(r => r.FechaFinRevision.Date)
-                    .Select(g => new
-                    {
-                        Date = g.Key,
-                        Count = g.Count()
-                    })
-                    .OrderBy(g => g.Date)
-                    .ToList();
-
-            foreach (var i in groupedCounts)
-            {
-                lista.Add(new DtoEstadisticasUsuario
+                lista.Add(new DtoEstadisticasUsuarioDate
                 {
-                    Fecha = i.Date,
-                    Conteo = i.Count
+                    Fecha = DateTime.ParseExact(item.Fecha, "dd-MM-yyyy", null),
+                    Conteo = item.Conteo
                 });
             }
 
+            //foreach (var item in allRows)
+            //{
+            //    item.FechaFinRevision = TimeZoneInfo.ConvertTimeFromUtc(item.FechaFinRevision, gmtMinus6).Date;
+            //}
+
+            //var groupedCounts = allRows.GroupBy(r => r.FechaFinRevision.Date)
+            //        .Select(g => new
+            //        {
+            //            Date = g.Key,
+            //            Count = g.Count()
+            //        })
+            //        .OrderBy(g => g.Date)
+            //        .ToList();
+
+            //foreach (var i in groupedCounts)
+            //{
+            //    lista.Add(new DtoEstadisticasUsuario
+            //    {
+            //        Fecha = i.Date,
+            //        Conteo = i.Count
+            //    });
+            //}
+
             await cache.SetStringAsync(id.ToString(), JsonSerializer.Serialize(lista), new DistributedCacheEntryOptions
             {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
             });
         }
+
         return lista;
     }
 }

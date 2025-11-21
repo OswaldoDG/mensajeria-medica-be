@@ -15,10 +15,10 @@ public class RevisionController(ILogger<RevisionController> logger, IServicioPdf
 
     [HttpGet("misestadisticas")]
     [AllowAnonymous]
-    public async Task<ActionResult<List<DtoEstadisticasUsuario>>> MisEstadisticas()
+    public async Task<ActionResult<List<DtoEstadisticasUsuarioDate>>> MisEstadisticas()
     {
         logger.LogInformation("Obteniendo estadisticas del usuario.");
-        var respuesta = await servicioPdf.ObtieneEstadisticasUsuario(UsuarioGuid!.Value);
+        var respuesta = await servicioPdf.ObtieneEstadisticasUsuario(Guid.Parse("57f1b99e-f00a-48ce-8145-828e4b407e6e"));
 
         return Ok(respuesta);
     }

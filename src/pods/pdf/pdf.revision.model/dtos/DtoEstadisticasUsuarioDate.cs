@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace pdf.revision.model.dtos
 {
-    public class DtoEstadisticasUsuario
+    public class DtoEstadisticasUsuarioDate
     {
-        public string Fecha { get; set; }
+        public DateTime Fecha { get; set; }
         public int Conteo { get; set; }
     }
 }
