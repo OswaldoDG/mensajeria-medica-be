@@ -405,11 +405,11 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
         }
         else
         {
-            string sql = @"select DATE_FORMAT(r.FechaInicioRevision , '%d-%m-%Y') as Fecha, count(r.usuarioid)  as Conteo
+            string sql = @"select DATE_FORMAT(CONVERT_TZ(r.FechaInicioRevision, '+00:00', '-06:00'), '%d-%m-%Y') as Fecha, count(r.usuarioid) as Conteo
 from pdfsplit.revision_pdf r 
 join aspnetusers u on r.UsuarioId = u.Id
 where
-r.UsuarioId = '-UID-' and
+r.UsuarioId = '-UID-' and r.FechaFinRevision is not null and
 r.FechaInicioRevision BETWEEN UTC_TIMESTAMP() - INTERVAL 16 DAY AND UTC_TIMESTAMP()
 group by DATE_FORMAT(r.FechaInicioRevision , '%d-%m-%Y')
 order by DATE_FORMAT(r.FechaInicioRevision , '%d-%m-%Y')";
