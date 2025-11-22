@@ -411,8 +411,8 @@ join aspnetusers u on r.UsuarioId = u.Id
 where
 r.UsuarioId = '-UID-' and r.FechaFinRevision is not null and
 r.FechaInicioRevision BETWEEN UTC_TIMESTAMP() - INTERVAL 16 DAY AND UTC_TIMESTAMP()
-group by DATE_FORMAT(r.FechaInicioRevision , '%d-%m-%Y')
-order by DATE_FORMAT(r.FechaInicioRevision , '%d-%m-%Y')";
+group by DATE_FORMAT(CONVERT_TZ(r.FechaInicioRevision, '+00:00', '-06:00'), '%d-%m-%Y')
+order by DATE_FORMAT(CONVERT_TZ(r.FechaInicioRevision, '+00:00', '-06:00'), '%d-%m-%Y')";
 
            // string baseSQl = "SELECT r.FechaFinRevision, r.ArchivoPdfId FROM pdfsplit.revision_pdf r" +
            //" inner join pdfsplit.archivo_pdf a on r.ArchivoPdfId = a.Id where r.FechaFinRevision is not null " +
