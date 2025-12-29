@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace pdf.revision.model;
 
@@ -16,6 +17,12 @@ public class TipoDocumento
     /// Nombre del tipo de documento.
     /// </summary>
     required public string Nombre { get; set; }
+
+    /// <summary>
+    /// Tecla asociada al documento en la UI
+    /// </summary>
+    [MaxLength(1)]
+    public string? Tecla { get; set; }
 
     /// <summary>
     /// Navegacion a la lista de partes que son del tipo documento.

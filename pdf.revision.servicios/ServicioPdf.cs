@@ -285,8 +285,7 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
         try
         {
             var documentos = await db.TiposDocumento.ToListAsync();
-
-            var lista = documentos.Select(d => new DtoTipoDoc() { Nombre = d.Nombre, Id = d.Id }).OrderBy(d => d.Nombre).ToList();
+            var lista = documentos.Select(d => new DtoTipoDoc() { Nombre = d.Nombre, Id = d.Id , Tecla = d.Tecla }).OrderBy(d => d.Nombre).ToList();
             respuesta.Ok = true;
             respuesta.Payload = lista;
         }

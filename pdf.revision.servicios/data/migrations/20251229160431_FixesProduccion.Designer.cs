@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using pdf.revision.servicios.datos;
 
@@ -11,9 +12,11 @@ using pdf.revision.servicios.datos;
 namespace pdf.revision.servicios.data.migrations
 {
     [DbContext(typeof(DbContextPdf))]
-    partial class DbContextPdfModelSnapshot : ModelSnapshot
+    [Migration("20251229160431_FixesProduccion")]
+    partial class FixesProduccion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

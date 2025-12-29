@@ -1,4 +1,6 @@
-﻿namespace pdf.revision.model;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace pdf.revision.model;
 
 /// <summary>
 /// DEfine un archivo PDF a separar.
@@ -49,4 +51,12 @@ public class ArchivoPdf
     /// Prioridad de proceasamiento, enntre mas alto el numero, mayor prioridad tiene el archivo para ser procesado.
     /// </summary>
     public int Prioridad { get; set; }
+
+    /// <summary>
+    /// Ruta de almacenamiento local del los archivos separados.
+    /// </summary>
+    [MaxLength(500)]
+    public string? RutaLocal { get; set; }
+
+    public int? ConteoLocal { get; set; }
 }

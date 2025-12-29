@@ -1,4 +1,6 @@
-﻿namespace pdf.revision.model.dtos.Nuevos;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace pdf.revision.model.dtos.Nuevos;
 
 public class DtoTipoDoc
 {
@@ -11,4 +13,9 @@ public class DtoTipoDoc
     /// Nombre del tipo de documento.
     /// </summary>
     required public string Nombre { get; set; }
+
+    /// <summary>
+    /// Tecla asociada al documento en la UI.
+    /// </summary>
+    public string? Tecla { get; set; }
 }
