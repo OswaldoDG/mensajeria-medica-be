@@ -48,6 +48,12 @@ public class ArchivoPdf
     public List<RevisionPdf> Revisiones { get; set; }
 
     /// <summary>
+    /// Identificador único del procesador para evitar bloqueos.
+    /// </summary>
+    [MaxLength(64)]
+    public string? IdProceso { get; set; }
+
+    /// <summary>
     /// Prioridad de proceasamiento, enntre mas alto el numero, mayor prioridad tiene el archivo para ser procesado.
     /// </summary>
     public int Prioridad { get; set; }

@@ -38,6 +38,8 @@ public class ParteDocumental
     /// </summary>
     public int? IdAgrupamiento { get; set; }
 
+    public string? RutaArchivo { get; set; }
+
     /// <summary>
     /// Navegacion Archivo.
     /// </summary>

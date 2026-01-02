@@ -24,7 +24,7 @@ public class RevisionController(ILogger<RevisionController> logger, IServicioPdf
     }
 
     [HttpGet("siguiente")]
-    public async Task<ActionResult<DtoArchivo>> SiguientePendiente()
+    public async Task<ActionResult<DtoArchivo>> SiguientePendiente([FromQuery(Name = "id")] string? Id )
     {
         logger.LogInformation("Obteniendo siguiente PDF pendiente.");
         var respuesta = await servicioPdf.SiguientePendiente(UsuarioGuid!.Value);
