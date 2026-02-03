@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
 using comunes.extensiones;
+using mensajeriamedica.model.comunicaciones.whatsapp;
 using mensajeriamedica.services.comunicaciones;
 using mensajeriamedica.services.comunicaciones.interpretes;
 using mensajeriamedica.services.comunicaciones.servicios;
@@ -36,8 +37,10 @@ public class Program
         builder.Services.AddTransient<IServicioMensajes, ServicioMensajes>();
         builder.Services.AddSingleton<IInterpreteHL7, InterpreteHL7>();
         builder.Services.AddDistributedMemoryCache();
+        builder.Services.Configure<WhatsAppConfig>(builder.Configuration.GetSection("ConfiguracionWhatsApp"));
 
         var app = builder.Build();
+        Seed(app);
 
         if (app.Environment.IsDevelopment())
         {
@@ -53,4 +56,11 @@ public class Program
         app.MapControllers();
         app.Run();
     }
+
+    public static void Seed(WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DbContextMensajeria>();
+        dbContext.Database.Migrate();
+     }
 }

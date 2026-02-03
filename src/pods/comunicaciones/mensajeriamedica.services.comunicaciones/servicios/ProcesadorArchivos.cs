@@ -1,9 +1,11 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Net.Http.Json;
 using System.Text.Json;
 using mensajeriamedica.api.comunicaciones.extensiones;
 using mensajeriamedica.model.comunicaciones.mensajes;
 using mensajeriamedica.model.comunicaciones.servidores;
+using mensajeriamedica.model.comunicaciones.whatsapp;
 using mensajeriamedica.services.comunicaciones.interpretes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -11,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace mensajeriamedica.services.comunicaciones.servicios;
 
@@ -18,10 +21,13 @@ namespace mensajeriamedica.services.comunicaciones.servicios;
 /// Servicio primario para la creacion de mensajes.
 /// </summary>
 [ExcludeFromCodeCoverage]
-public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteHL7 interprete, IServiceScopeFactory scopeFactory, IConfiguration configuration, IDistributedCache cache) : BackgroundService
+public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteHL7 interprete, 
+    IServiceScopeFactory scopeFactory, IConfiguration configuration, IDistributedCache cache,
+    IOptions<WhatsAppConfig> options ) : BackgroundService
 {
     private readonly int intervaloPoll = configuration.GetValue<int>("IntervaloSegundosPollFtp") * 1000;
     private const string CacheKey = "ClientesMensajeria";
+    private WhatsAppConfig whatsappConfig = options.Value;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -30,7 +36,6 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
             using (var scope = scopeFactory.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<DbContextMensajeria>();
-
                 logger.LogDebug("Iniciando procesamiento de archivos...");
 
                 var clientes = await ObtenerClientes(dbContext, stoppingToken);
@@ -58,38 +63,25 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
     private async Task<List<Servidor>> ObtenerClientes(DbContextMensajeria dbContext, CancellationToken cancellationToken)
     {
         var cacheD = await cache.GetStringAsync(CacheKey, cancellationToken);
-        List<Servidor> clientes;
-        var clientesValidos = new List<Servidor>();
+
         try
         {
             if (cacheD != null)
             {
                 logger.LogDebug("Recuperando clientes desde caché");
-                clientes = JsonSerializer.Deserialize<List<Servidor>>(cacheD);
-            }
-            else
-            {
-                logger.LogInformation("Consultando Clientes desde base de datos");
-                clientes = await dbContext.Servidores.ToListAsync(cancellationToken);
-                if (clientes.Count == 0) return clientes;
-                var options = new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
-                await cache.SetStringAsync(CacheKey, JsonSerializer.Serialize(clientes), options, cancellationToken);
+                return JsonSerializer.Deserialize<List<Servidor>>(cacheD);
             }
 
-            foreach (var cliente in clientes)
+            logger.LogInformation("Consultando Clientes desde base de datos");
+            List<Servidor> clientesValidos = await dbContext.Servidores.ToListAsync(cancellationToken);
+
+            foreach (var cliente in clientesValidos)
             {
                 logger.LogDebug("Validando carpeta para cliente {Id}: {FolderFtp}", cliente.Id, cliente.FolderFtp);
 
                 if (!Directory.Exists(cliente.FolderFtp))
                 {
-                    logger.LogError("No existe el directorio {Folder}", cliente.FolderFtp);
-                    dbContext.Servidores.Remove(cliente);
-                    await dbContext.SaveChangesAsync();
-                    clientes.Remove(cliente);
-                    var options = new DistributedCacheEntryOptions()
-                        .SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
-                    await cache.SetStringAsync(CacheKey, JsonSerializer.Serialize(clientes), options, cancellationToken);
-                    continue;
+                    Directory.CreateDirectory(cliente.FolderFtp);
                 }
 
                 var subDirs = new[] { "ok", "erroneos", "duplicados" };
@@ -103,16 +95,18 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
                         logger.LogDebug("Creado subdirectorio: {FullPath}", fullPath);
                     }
                 }
-
-                clientesValidos.Add(cliente);
             }
+
+            var options = new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
+            await cache.SetStringAsync(CacheKey, JsonSerializer.Serialize(clientesValidos), options, cancellationToken);
+            return clientesValidos;
+
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error validando carpetas para cliente {Message}", ex.Message);
+            return [];
         }
-
-        return clientesValidos;
     }
 
     private async Task ProcesarArchivosCliente(Servidor cliente, DbContextMensajeria dbContext, CancellationToken cancellationToken)
@@ -121,7 +115,7 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
         {
             logger.LogDebug("Procesando archivos en: {FolderFtp}", cliente.FolderFtp);
 
-            var archivos = Directory.GetFiles(cliente.FolderFtp).Where(e => !Directory.Exists(e)).ToList();
+            var archivos = Directory.GetFiles(cliente.FolderFtp).ToList();
 
             logger.LogDebug("Archivos encontrados: {Archivos}", archivos.Count);
 
@@ -140,7 +134,7 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
 
                     logger.LogDebug("Hash calculado: {Hash}", hash);
 
-                    var existeDuplicado = await dbContext.Mensajes.AnyAsync(e => e.Hash == hash && e.Estado == EstadoMensaje.Enviado, cancellationToken);
+                    var existeDuplicado = false; // await dbContext.Mensajes.AnyAsync(e => e.Hash == hash && e.Estado == EstadoMensaje.Enviado, cancellationToken);
 
                     if (existeDuplicado)
                     {
@@ -168,13 +162,18 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
                                 SucursalId = contacto.SucursalId!
                             };
 
-                            dbContext.Mensajes.Add(mensaje);
-                            await dbContext.SaveChangesAsync();
+                            //dbContext.Mensajes.Add(mensaje);
+                            //await dbContext.SaveChangesAsync();
+
+                            await EnviaMensajeWhats(mensaje);
+                           // mensaje.Estado = EstadoMensaje.Enviado;
+
+                            // await dbContext.SaveChangesAsync();
 
                             string nuevoNombre = $"mensaje-{cliente.Id}-{contacto.SucursalId}-{mensaje.Id}.hl7";
                             string rutaDestino = Path.Combine(cliente.FolderFtp, "ok", nuevoNombre);
 
-                            File.Move(archivo, rutaDestino);
+                           // File.Move(archivo, rutaDestino);
                         }
                         else
                         {
@@ -196,6 +195,54 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
         {
             logger.LogDebug(ex, "Error procesando cliente {Message}", ex.Message);
         }
+    }
+
+    private async Task EnviaMensajeWhats(Mensaje m)
+    {
+        var accessToken = this.whatsappConfig.AccessToken;
+        var phoneNumberId = this.whatsappConfig.PhoneNumber;
+        var recipient = "525519650570"; //m.Telefono; 
+
+        using var client = new HttpClient();
+
+        var request = new HttpRequestMessage
+        {
+            Method = HttpMethod.Post,
+            RequestUri = new Uri($"https://graph.facebook.com/v22.0/{phoneNumberId}/messages"),
+            Headers = { { "Authorization", $"Bearer {accessToken}" } },
+            Content = JsonContent.Create(new
+            {
+                messaging_product = "whatsapp",
+                to = recipient,
+                type = "template",
+                template = new
+                {
+                    name = this.whatsappConfig.TemplateId, // replace with your approved template name
+                    language = new { code = "es_MX" },
+                    components = new[]
+                    {
+                        new {
+                            type = "header",
+                            parameters = new[]
+                            {
+                                new { type = "text", text = "Hospítal Radiológico" }, // dynamic parameter
+                            }
+                        },
+                        new {
+                            type = "body",
+                            parameters = new[]
+                            {
+                                new { type = "text", text = m.NombreContacto }, // dynamic parameter
+                                new { type = "text", text = m.Url }
+                            }
+                        }
+                    }
+                }
+            })
+        };
+
+        var response = await client.SendAsync(request);
+        var result = await response.Content.ReadAsStringAsync();
     }
 
     private string ObtenerNombreUnico(string rutaBase)
