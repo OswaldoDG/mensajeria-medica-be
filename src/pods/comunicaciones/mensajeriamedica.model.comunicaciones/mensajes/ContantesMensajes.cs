@@ -24,4 +24,19 @@ public enum EstadoMensaje
     /// Formato incorrecto en el archivo recibido.
     /// </summary>
     FormatoIncorrecto,
+
+    /// <summary>
+    /// Archivo duplciado
+    /// </summary>
+    Duplicado,
+
+    /// <summary>
+    /// FAllido al envia rpowhats
+    /// </summary>
+    FallidoWhatsApp, 
+    
+    /// <summary>
+    /// NUmero de tgelñefono o valido
+    /// </summary>
+    NumTelInvalido
 }

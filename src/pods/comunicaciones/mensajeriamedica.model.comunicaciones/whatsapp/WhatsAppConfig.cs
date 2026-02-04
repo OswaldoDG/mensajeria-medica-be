@@ -7,4 +7,6 @@ public class WhatsAppConfig
     public string PhoneNumber { get; set; }
 
     public string TemplateId { get; set; }
+
+    public string PrefijoDefaultPais { get; set; }
 }

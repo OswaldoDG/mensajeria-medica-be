@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Net.Http.Json;
 using System.Text.Json;
 using mensajeriamedica.api.comunicaciones.extensiones;
@@ -28,6 +27,7 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
     private readonly int intervaloPoll = configuration.GetValue<int>("IntervaloSegundosPollFtp") * 1000;
     private const string CacheKey = "ClientesMensajeria";
     private WhatsAppConfig whatsappConfig = options.Value;
+    private List<string> Folders = [];
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -83,18 +83,6 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
                 {
                     Directory.CreateDirectory(cliente.FolderFtp);
                 }
-
-                var subDirs = new[] { "ok", "erroneos", "duplicados" };
-
-                foreach (var dir in subDirs)
-                {
-                    var fullPath = Path.Combine(cliente.FolderFtp, dir);
-                    if (!Directory.Exists(fullPath))
-                    {
-                        Directory.CreateDirectory(fullPath);
-                        logger.LogDebug("Creado subdirectorio: {FullPath}", fullPath);
-                    }
-                }
             }
 
             var options = new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
@@ -129,29 +117,23 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
                     logger.LogDebug("Procesando archivo: {NombreArchivo}", nombreArchivo);
 
                     var contenido = await File.ReadAllTextAsync(archivo, cancellationToken);
-
                     var hash = ExtensionesProcesamiento.GetSha256Hash(contenido);
 
-                    logger.LogDebug("Hash calculado: {Hash}", hash);
-
-                    var existeDuplicado = false; // await dbContext.Mensajes.AnyAsync(e => e.Hash == hash && e.Estado == EstadoMensaje.Enviado, cancellationToken);
+                    var existeDuplicado = await dbContext.Mensajes.AnyAsync(e => e.Hash == hash);
 
                     if (existeDuplicado)
                     {
                         logger.LogDebug("Archivo duplicado: {NombreArchivo}", nombreArchivo);
-                        var destinoOriginal = Path.Combine(cliente.FolderFtp, "duplicados", nombreArchivo);
-                        var destino = ObtenerNombreUnico(destinoOriginal);
-                        File.Move(archivo, destino);
-                        logger.LogDebug("Archivo movido a: {Destino}", Path.GetFileName(destino));
+                        MoveFile(archivo, cliente.FolderFtp, EstadoMensaje.Duplicado);
                     }
                     else
                     {
                         var contacto = interprete.ObtieneContacto(contenido);
                         if (contacto!.DatosValidos)
                         {
+
                             var mensaje = new Mensaje()
                             {
-                                Id = dbContext.Mensajes.Any() ? dbContext.Mensajes.Select(e => e.Id).ToList()!.Max() + 1 : 1,
                                 Hash = hash!,
                                 FechaCreacion = DateTime.UtcNow,
                                 Estado = EstadoMensaje.Pendiente,
@@ -162,26 +144,34 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
                                 SucursalId = contacto.SucursalId!
                             };
 
-                            //dbContext.Mensajes.Add(mensaje);
-                            //await dbContext.SaveChangesAsync();
+                            dbContext.Mensajes.Add(mensaje);
+                            await dbContext.SaveChangesAsync();
 
-                            await EnviaMensajeWhats(mensaje);
-                           // mensaje.Estado = EstadoMensaje.Enviado;
 
-                            // await dbContext.SaveChangesAsync();
+                            if (!string.IsNullOrEmpty(contacto.Telefono))
+                            {
+                                if (!mensaje.Telefono.StartsWith(whatsappConfig.PrefijoDefaultPais))
+                                {
+                                    mensaje.Telefono = whatsappConfig.PrefijoDefaultPais + mensaje.Telefono;
+                                }
 
-                            string nuevoNombre = $"mensaje-{cliente.Id}-{contacto.SucursalId}-{mensaje.Id}.hl7";
-                            string rutaDestino = Path.Combine(cliente.FolderFtp, "ok", nuevoNombre);
+                                var wresult = await EnviaMensajeWhats(mensaje);
 
-                           // File.Move(archivo, rutaDestino);
+                                mensaje.Estado = wresult ? EstadoMensaje.Enviado : EstadoMensaje.FallidoWhatsApp;
+                            }
+                            else
+                            {
+                                mensaje.Estado = EstadoMensaje.NumTelInvalido;
+                            }
+
+                            await dbContext.SaveChangesAsync();
+                            MoveFile(archivo, cliente.FolderFtp, mensaje.Estado, mensaje.Id);
+
                         }
                         else
                         {
                             logger.LogDebug("Archivo erroneo: {NombreArchivo}", nombreArchivo);
-                            var destinoOriginal = Path.Combine(cliente.FolderFtp, "erroneos", nombreArchivo);
-                            var destino = ObtenerNombreUnico(destinoOriginal);
-                            File.Move(archivo, destino);
-                            logger.LogDebug("Archivo movido a: {Destino}", Path.GetFileName(destino));
+                            MoveFile(archivo, cliente.FolderFtp, EstadoMensaje.Fallido);
                         }
                     }
                 }
@@ -197,11 +187,59 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
         }
     }
 
-    private async Task EnviaMensajeWhats(Mensaje m)
+    private void MoveFile(string sourcePath, string rutaBase,  EstadoMensaje estado, long? dbId = null)
+    {
+
+        string destino = string.Empty;
+        string subFolder = Path.Combine(rutaBase, $"{estado}");
+
+        if (this.Folders.IndexOf(subFolder) < 0)
+        {
+            if (!Directory.Exists(subFolder))
+            {
+                Directory.CreateDirectory(subFolder);
+            }
+            this.Folders.Add(subFolder);
+        }
+
+        try
+        {
+            var nombreArchivo = Path.GetFileName(sourcePath);
+            switch (estado)
+            {
+
+                case EstadoMensaje.FallidoWhatsApp:
+                case EstadoMensaje.Enviado:
+                    nombreArchivo = $"msg-{dbId}.hl7";
+                    destino = Path.Combine(subFolder, nombreArchivo);
+                    break;
+
+                case EstadoMensaje.Duplicado:
+                case EstadoMensaje.Fallido:
+                    destino = Path.Combine(subFolder, nombreArchivo);
+                    break;
+            }
+
+            if (destino != string.Empty)
+            {
+                if (File.Exists(destino))
+                {
+                    destino = destino + "." + DateTime.UtcNow.Ticks;
+                }
+                File.Move(sourcePath, destino);
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error procesando archivo {Archivo} -> {Destino} {Message}", sourcePath, destino, ex.Message);
+        }
+    }
+
+    private async Task<bool> EnviaMensajeWhats(Mensaje m)
     {
         var accessToken = this.whatsappConfig.AccessToken;
         var phoneNumberId = this.whatsappConfig.PhoneNumber;
-        var recipient = "525519650570"; //m.Telefono; 
+        var recipient = m.Telefono; 
 
         using var client = new HttpClient();
 
@@ -242,27 +280,13 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
         };
 
         var response = await client.SendAsync(request);
-        var result = await response.Content.ReadAsStringAsync();
-    }
 
-    private string ObtenerNombreUnico(string rutaBase)
-    {
-        if (!File.Exists(rutaBase)) return rutaBase;
-
-        var directorio = Path.GetDirectoryName(rutaBase);
-        var nombre = Path.GetFileNameWithoutExtension(rutaBase);
-
-        var extension = Path.GetExtension(rutaBase);
-
-        int contador = 1;
-        string nuevaRuta;
-        do
+        if (!response.IsSuccessStatusCode)
         {
-            nuevaRuta = Path.Combine(directorio, $"{nombre}_{contador}{extension}");
-            contador++;
+            var result = await response.Content.ReadAsStringAsync();
+            logger.LogError("Error procesando whatsapp {Message}", result);
         }
-        while (File.Exists(nuevaRuta));
 
-        return nuevaRuta;
+        return response.IsSuccessStatusCode;
     }
 }
