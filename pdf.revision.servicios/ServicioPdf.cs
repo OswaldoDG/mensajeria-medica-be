@@ -210,6 +210,7 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
 
             archivo.Estado = EstadoRevision.Pendiente;
             archivo.UltimaRevision = null;
+            archivo.UsuarioId = null;
         }
 
         await db.SaveChangesAsync();
