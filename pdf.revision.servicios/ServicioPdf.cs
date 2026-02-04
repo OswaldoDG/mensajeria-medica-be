@@ -55,22 +55,14 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
 
     public async Task<RespuestaPayload<DtoArchivo>> SiguientePendiente(Guid usuarioId)
     {
-        // 1. debe obtener de la  base de datos el siguiente elemento en estado Pendiente ordenando por prioridad descencendete.
-        // 1.1 Si no hay elementos pendientes debe llamar a ReiniciaPdfZombies() y volver a realizar la busqueda
-        // 1.2 Si no hay elementos pendientes, debe retornar un RespuestaPayload con el valor nulo y estado 404.
-        // 2. debe actualizar el estado del elemento a EnRevisionvy establecer UltimaRevision = DateTime.UtcNow.
-        // 3. debe insertar un nuevo elemento  RevisionPdf con el id del usuario en sesion y el id del archivo.
-        // 4. debe retornar el elemento obtenido en el paso 1 convertido a DtoArchivo y estado 200.
-
-
         await ReiniciaPdfZombies();
-        var archivo = await db.Archivos.Where(a => a.Estado == EstadoRevision.Pendiente).OrderByDescending(a => a.Prioridad).FirstOrDefaultAsync();
-
-        if (archivo is null)
+        bool buscando = true;
+        ArchivoPdf? archivo = null;
+        while (buscando)
         {
-            archivo = await db.Archivos.Where(a => a.Estado == EstadoRevision.Pendiente).OrderByDescending(a => a.Prioridad).FirstOrDefaultAsync();
+            ArchivoPdf? siguiente = await db.Archivos.Where(a => a.Estado == EstadoRevision.Pendiente && a.UsuarioId == null).OrderByDescending(a => a.Prioridad).FirstOrDefaultAsync();
 
-            if (archivo is null)
+            if (siguiente is null)
             {
                 return new RespuestaPayload<DtoArchivo>
                 {
@@ -83,14 +75,22 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
                     }
                 };
             }
-        }
 
-        archivo.Estado = EstadoRevision.EnCurso;
-        archivo.UltimaRevision = DateTime.UtcNow;
+            siguiente.Estado = EstadoRevision.EnCurso;
+            siguiente.UltimaRevision = DateTime.UtcNow;
+            siguiente.UsuarioId = usuarioId;
+            await db.SaveChangesAsync();
+
+            archivo = await db.Archivos.AsNoTracking<ArchivoPdf>().FirstOrDefaultAsync(a => a.Id == siguiente.Id);
+            if (archivo!.UsuarioId == usuarioId)
+            {
+                break;
+            }
+        }
 
         var revision = new RevisionPdf
         {
-            ArchivoPdfId = archivo.Id,
+            ArchivoPdfId = archivo!.Id,
             UsuarioId = usuarioId,
             FechaInicioRevision = DateTime.UtcNow
         };
@@ -413,15 +413,9 @@ r.FechaInicioRevision BETWEEN UTC_TIMESTAMP() - INTERVAL 16 DAY AND UTC_TIMESTAM
 group by DATE_FORMAT(CONVERT_TZ(r.FechaInicioRevision, '+00:00', '-06:00'), '%d-%m-%Y')
 order by DATE_FORMAT(CONVERT_TZ(r.FechaInicioRevision, '+00:00', '-06:00'), '%d-%m-%Y')";
 
-           // string baseSQl = "SELECT r.FechaFinRevision, r.ArchivoPdfId FROM pdfsplit.revision_pdf r" +
-           //" inner join pdfsplit.archivo_pdf a on r.ArchivoPdfId = a.Id where r.FechaFinRevision is not null " +
-           //" and (a.Estado = 4 or a.Estado = 2 ) and r.UsuarioId = '-UID-' and CONVERT_TZ(r.FechaFinRevision, '+00:00', '-06:00') " +
-           //" BETWEEN UTC_TIMESTAMP() - INTERVAL 7 DAY AND UTC_TIMESTAMP();";
-
             string query = sql.Replace("-UID-", id.ToString());
 
-           var  rows = await db.Set<DtoEstadisticasUsuario>().FromSqlRaw(query).ToListAsync();
-            TimeZoneInfo gmtMinus6 = TimeZoneInfo.CreateCustomTimeZone("GMT-6", TimeSpan.FromHours(-6), "GMT-6", "GMT-6");
+            var rows = await db.Set<DtoEstadisticasUsuario>().FromSqlRaw(query).ToListAsync();
 
             foreach (var item in rows)
             {
@@ -432,28 +426,10 @@ order by DATE_FORMAT(CONVERT_TZ(r.FechaInicioRevision, '+00:00', '-06:00'), '%d-
                 });
             }
 
-            //foreach (var item in allRows)
-            //{
-            //    item.FechaFinRevision = TimeZoneInfo.ConvertTimeFromUtc(item.FechaFinRevision, gmtMinus6).Date;
-            //}
-
-            //var groupedCounts = allRows.GroupBy(r => r.FechaFinRevision.Date)
-            //        .Select(g => new
-            //        {
-            //            Date = g.Key,
-            //            Count = g.Count()
-            //        })
-            //        .OrderBy(g => g.Date)
-            //        .ToList();
-
-            //foreach (var i in groupedCounts)
-            //{
-            //    lista.Add(new DtoEstadisticasUsuario
-            //    {
-            //        Fecha = i.Date,
-            //        Conteo = i.Count
-            //    });
-            //}
+            if (rows.Count > 1)
+            {
+                rows.RemoveAt(rows.Count - 1);
+            }
 
             await cache.SetStringAsync(id.ToString(), JsonSerializer.Serialize(lista), new DistributedCacheEntryOptions
             {

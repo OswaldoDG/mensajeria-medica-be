@@ -40,6 +40,7 @@ public class DbContextPdf : DbContext
             entity.Property(e => e.UltimaRevision);
             entity.Property(e => e.TotalPaginas);
             entity.Property(e => e.Prioridad);
+            entity.Property(e => e.UsuarioId).IsRequired(false).HasDefaultValue(null);
 
             entity.HasMany(e => e.Partes)
                   .WithOne(p => p.Archivo)

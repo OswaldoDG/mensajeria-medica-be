@@ -33,6 +33,11 @@ public class ArchivoPdf
     public DateTime? UltimaRevision { get; set; }
 
     /// <summary>
+    /// Id del usaurio que toma el trabjajo para evitar concurrencia.
+    /// </summary>
+    public Guid? UsuarioId { get; set; }
+
+    /// <summary>
     /// Total de paginas del archivo PDF.
     /// </summary>
     public int TotalPaginas { get; set; } = 0;
