@@ -25,5 +25,35 @@ public enum EstadoRevision
     /// <summary>
     /// Indica que el archivo ha sido separado en varios PDFs.
     /// </summary>
-    SeparadoEnPdfs = 4
+    SeparadoEnPdfs = 4,
+
+    /// <summary>
+    /// Proceso de separación.
+    /// </summary>
+    ProcesoPDF = 5,
+
+    /// <summary>
+    /// Documento sin partes.
+    /// </summary>
+    SinPartes = 6,
+
+    /// <summary>
+    /// Documento excluido.
+    /// </summary>
+    Excluido = 10,
+
+    /// <summary>
+    /// Documento para reproceso.
+    /// </summary>
+    Reproceso = 11,
+
+    /// <summary>
+    /// Sin PDF.
+    /// </summary>
+    SinPDF = 12,
+
+    /// <summary>
+    /// Estado finalizado sin errores.
+    /// </summary>
+    FinalizadaConErrores = 13
 }
