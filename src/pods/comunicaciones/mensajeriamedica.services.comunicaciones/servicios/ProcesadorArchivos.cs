@@ -148,7 +148,7 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
                             await dbContext.SaveChangesAsync();
 
 
-                            if (!string.IsNullOrEmpty(contacto.Telefono))
+                            if (!string.IsNullOrEmpty(respuesta.Contacto.Telefono))
                             {
                                 if (!mensaje.Telefono.StartsWith(whatsappConfig.PrefijoDefaultPais))
                                 {
@@ -171,6 +171,7 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
                         else
                         {
                             logger.LogDebug("Archivo erroneo: {NombreArchivo}", nombreArchivo);
+                            logger.LogError("Ocurrió un error con el archivo: {Mensaje}", respuesta.Mensaje);
                             MoveFile(archivo, cliente.FolderFtp, EstadoMensaje.Fallido);
                         }
                     }
