@@ -128,8 +128,8 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
                     }
                     else
                     {
-                        var contacto = interprete.ObtieneContacto(contenido);
-                        if (contacto!.DatosValidos)
+                        var respuesta = interprete.Parse(contenido);
+                        if (respuesta.Contacto!.DatosValidos)
                         {
 
                             var mensaje = new Mensaje()
@@ -137,18 +137,18 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
                                 Hash = hash!,
                                 FechaCreacion = DateTime.UtcNow,
                                 Estado = EstadoMensaje.Pendiente,
-                                Telefono = contacto.Telefono!,
-                                NombreContacto = contacto.NombreContacto!,
-                                Url = contacto.Url!,
+                                Telefono = respuesta.Contacto.Telefono!,
+                                NombreContacto = respuesta.Contacto.NombreContacto!,
+                                Url = respuesta.Contacto.Url!,
                                 ServidorId = cliente.Id,
-                                SucursalId = contacto.SucursalId!
+                                SucursalId = respuesta.Contacto.SucursalId!
                             };
 
                             dbContext.Mensajes.Add(mensaje);
                             await dbContext.SaveChangesAsync();
 
 
-                            if (!string.IsNullOrEmpty(contacto.Telefono))
+                            if (!string.IsNullOrEmpty(respuesta.Contacto.Telefono))
                             {
                                 if (!mensaje.Telefono.StartsWith(whatsappConfig.PrefijoDefaultPais))
                                 {
@@ -171,6 +171,7 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
                         else
                         {
                             logger.LogDebug("Archivo erroneo: {NombreArchivo}", nombreArchivo);
+                            logger.LogError("Ocurrió un error con el archivo: {Mensaje}", respuesta.Mensaje);
                             MoveFile(archivo, cliente.FolderFtp, EstadoMensaje.Fallido);
                         }
                     }
