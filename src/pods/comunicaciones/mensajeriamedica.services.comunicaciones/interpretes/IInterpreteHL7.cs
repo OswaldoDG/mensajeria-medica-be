@@ -7,5 +7,5 @@ namespace mensajeriamedica.services.comunicaciones.interpretes;
 /// </summary>
 public interface IInterpreteHL7
 {
-    ContactoEstudio? ObtieneContacto(string hl7data);
+    RespuestaContacto Parse(string hl7data);
 }
