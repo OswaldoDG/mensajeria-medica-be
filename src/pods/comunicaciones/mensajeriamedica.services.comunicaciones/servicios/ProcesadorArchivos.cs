@@ -146,8 +146,8 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
                     }
                     else
                     {
-                        var contacto = interprete.ObtieneContacto(contenido);
-                        if (contacto!.DatosValidos)
+                        var respuesta = interprete.Parse(contenido);
+                        if (respuesta.Contacto!.DatosValidos)
                         {
                             var mensaje = new Mensaje()
                             {
@@ -155,11 +155,11 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
                                 Hash = hash!,
                                 FechaCreacion = DateTime.UtcNow,
                                 Estado = EstadoMensaje.Pendiente,
-                                Telefono = contacto.Telefono!,
-                                NombreContacto = contacto.NombreContacto!,
-                                Url = contacto.Url!,
+                                Telefono = respuesta.Contacto.Telefono!,
+                                NombreContacto = respuesta.Contacto.NombreContacto!,
+                                Url = respuesta.Contacto.Url!,
                                 ServidorId = cliente.Id,
-                                SucursalId = contacto.SucursalId!
+                                SucursalId = respuesta.Contacto.SucursalId!
                             };
 
                             //dbContext.Mensajes.Add(mensaje);
@@ -170,14 +170,15 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
 
                             // await dbContext.SaveChangesAsync();
 
-                            string nuevoNombre = $"mensaje-{cliente.Id}-{contacto.SucursalId}-{mensaje.Id}.hl7";
+                            string nuevoNombre = $"mensaje-{cliente.Id}-{respuesta.Contacto.SucursalId}-{mensaje.Id}.hl7";
                             string rutaDestino = Path.Combine(cliente.FolderFtp, "ok", nuevoNombre);
 
-                           // File.Move(archivo, rutaDestino);
+                            File.Move(archivo, rutaDestino);
                         }
                         else
                         {
                             logger.LogDebug("Archivo erroneo: {NombreArchivo}", nombreArchivo);
+                            logger.LogError("Error: {Mensaje}", respuesta.Mensaje);
                             var destinoOriginal = Path.Combine(cliente.FolderFtp, "erroneos", nombreArchivo);
                             var destino = ObtenerNombreUnico(destinoOriginal);
                             File.Move(archivo, destino);
