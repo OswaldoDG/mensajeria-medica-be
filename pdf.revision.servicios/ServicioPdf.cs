@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using pdf.revision.model;
 using pdf.revision.model.dtos;
 using pdf.revision.model.dtos.Nuevos;
@@ -26,9 +27,6 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
     private readonly int duracionMinutosSasToken = configuration!.GetValue<int>("azure:blob:duracionMinutosSasToken")!;
     public async Task<RespuestaPayload<ArchivoPdf>> PorId(int id, Guid usuarioId)
     {
-        // 1. debe obtener de la base de datos el elemento con el id indicado.
-        //  1.1 Si no hay elementos pendientes, debe retornar un RespuestaPayload con el valor nulo y estado 404.
-        // 2. debe retornar el elemento obtenido convertido a ArchivoPdf con todos las revisiones y partes documentales y estado 200.
         var archivo = await db.Archivos.Include(a => a.Partes).Include(a => a.Revisiones).FirstOrDefaultAsync(a => a.Id == id);
 
         if (archivo is null)
@@ -50,8 +48,6 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
             HttpCode = HttpStatusCode.OK
         };
     }
-
-
 
     public async Task<RespuestaPayload<DtoArchivo>> SiguientePendiente(Guid usuarioId)
     {
@@ -81,6 +77,7 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
             siguiente.UsuarioId = usuarioId;
             await db.SaveChangesAsync();
 
+            await Task.Delay(250);
             archivo = await db.Archivos.AsNoTracking<ArchivoPdf>().FirstOrDefaultAsync(a => a.Id == siguiente.Id);
             if (archivo!.UsuarioId == usuarioId)
             {

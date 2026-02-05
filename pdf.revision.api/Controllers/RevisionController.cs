@@ -27,14 +27,30 @@ public class RevisionController(ILogger<RevisionController> logger, IServicioPdf
     public async Task<ActionResult<DtoArchivo>> SiguientePendiente([FromQuery(Name = "id")] string? Id )
     {
         logger.LogInformation("Obteniendo siguiente PDF pendiente.");
-        var respuesta = await servicioPdf.SiguientePendiente(UsuarioGuid!.Value);
 
-        if (!respuesta.Ok)
+        bool buscando = true;
+        DtoArchivo archivo = null;
+
+        while (buscando)
         {
-            return ActionFromCode(respuesta!.HttpCode, respuesta.Error!.Codigo);
+            var respuesta = await servicioPdf.SiguientePendiente(UsuarioGuid!.Value);
+            if (respuesta.Ok)
+            {
+                var actual = await servicioPdf.PorId(respuesta.Payload!.Id, UsuarioGuid!.Value);
+                if (actual.Payload!.UsuarioId == UsuarioGuid!.Value)
+                {
+                    archivo = respuesta.Payload;
+                    break;
+                }
+            }
+            else
+            {
+                return ActionFromCode(respuesta!.HttpCode, respuesta.Error!.Codigo);
+            }
+
         }
 
-        return Ok(respuesta.Payload);
+        return Ok(archivo);
     }
 
     [HttpGet("{id}")]
