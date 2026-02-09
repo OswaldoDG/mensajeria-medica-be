@@ -1,18 +1,21 @@
-﻿using System.Net;
-using comunes.busqueda;
+﻿using comunes.busqueda;
 using comunes.respuestas;
 using mensajeriamedica.model.comunicaciones.mensajes;
+using mensajeriamedica.services.comunicaciones.helper;
 using mensajeriamedica.services.comunicaciones.servicios;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Net;
 
 namespace mensajeriamedica.api.comunicaciones.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class MensajesController(ILogger<MensajesController> logger,  IServicioMensajes servicioMensajes) : ControllerBase
+public class MensajesController(ILogger<MensajesController> logger,  IServicioMensajes servicioMensajes, IConfiguration configuration) : ControllerBase
 {
+    private readonly IConfiguration _configuration = configuration;
+
     [HttpPost("buscar")]
     [SwaggerOperation(Description = "Obtiene una lista de mesanejs en base a la búsqueda.", OperationId = "BuscarMensajes")]
     [SwaggerResponse(statusCode: 200, type: typeof(ResultadoPaginado<DtoMensaje>), description: "Paginado de mensajes encontrados")]
@@ -32,6 +35,47 @@ public class MensajesController(ILogger<MensajesController> logger,  IServicioMe
         }
 
         return Ok(respuesta.Payload);
+    }
+
+    [HttpPost("buscar-descarga")]
+    public async Task<IActionResult> ExcelBusquedaMensajes([FromBody] Busqueda busqueda)
+    {
+        try
+        {
+            string directorioBase = _configuration["ExcelDir"];
+
+            if (string.IsNullOrEmpty(directorioBase))
+                return StatusCode(500, new { error = "Directorio de Excel no configurado." });
+
+            if (!Directory.Exists(directorioBase))
+            {
+                Directory.CreateDirectory(directorioBase);
+            }
+
+            string nombreArchivo = $"Resultados_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+            string rutaCompleta = Path.Combine(directorioBase, nombreArchivo);
+
+            var respuesta = await servicioMensajes.ExcelBusquedaMensajes(busqueda, rutaCompleta);
+
+            if (!respuesta.Ok)
+            {
+                logger.LogDebug("MensajesController - error al buscar mensajes {Status} {Mensaje} {Codigo}",
+                    respuesta.Error?.HttpCode, respuesta.Error?.Mensaje, respuesta.Error?.Codigo);
+
+                return ActionFromCode(respuesta.HttpCode, respuesta.Error?.Mensaje);
+            }
+
+            byte[] contenidoArchivo = await System.IO.File.ReadAllBytesAsync(rutaCompleta);
+
+            string mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+            return File(contenidoArchivo, mimeType, nombreArchivo);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error generando Excel");
+            return StatusCode(500, new { error = ex.Message });
+        }
     }
 
     [NonAction]
