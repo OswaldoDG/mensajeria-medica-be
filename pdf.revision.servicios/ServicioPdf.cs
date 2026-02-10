@@ -113,7 +113,7 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
         }
     }
 
-    public async Task<Respuesta> CreaPartesPdf(int id, List<DtoParteDocumental> partes, int totalPaginas, Guid usuarioId)
+    public async Task<Respuesta> CreaPartesPdf(int id, DtoFinalizar dto, Guid usuarioId)
     {
         var archivo = await db.Archivos
             .Include(a => a.Partes)
@@ -145,39 +145,46 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
             };
         }
 
-        if (partes.Count > 0)
-        {
-            if (archivo.Partes == null)
-                archivo.Partes = new List<ParteDocumental>();
 
-            foreach (var dtoParte in partes)
+        if (dto.EstadoRevision == EstadoRevision.PdfInvalido)
+        {
+            archivo.TotalPaginas = 0;
+            archivo.Partes?.Clear();
+            archivo.Estado = EstadoRevision.PdfInvalido;
+
+            await CerrarRevisionAsync(id, usuarioId);
+
+            db.Archivos.Update(archivo);
+            await db.SaveChangesAsync();
+
+            return new Respuesta
             {
-                var parte = new ParteDocumental
+                Ok = true,
+                HttpCode = HttpStatusCode.OK
+            };
+        }
+
+        if (dto.Partes != null && dto.Partes.Any())
+        {
+            archivo.Partes ??= new List<ParteDocumental>();
+
+            foreach (var dtoParte in dto.Partes)
+            {
+                archivo.Partes.Add(new ParteDocumental
                 {
                     ArchivoPdfId = archivo.Id,
                     PaginaInicio = dtoParte.PaginaInicio,
                     PaginaFin = dtoParte.PaginaFin,
                     TipoDocumentoId = dtoParte.TipoDocumentoId,
                     IdAgrupamiento = dtoParte.IdAgrupamiento
-                };
-
-                archivo.Partes.Add(parte);
+                });
             }
         }
 
-        archivo.TotalPaginas = totalPaginas;
+        archivo.TotalPaginas = dto.TotalPaginas;
         archivo.Estado = EstadoRevision.Finalizada;
 
-        var revision = await db.Revisiones
-            .Where(r => r.ArchivoPdfId == id && r.UsuarioId == usuarioId)
-            .OrderByDescending(r => r.FechaInicioRevision)
-            .FirstOrDefaultAsync();
-
-        if (revision != null)
-        {
-            revision.FechaFinRevision = DateTime.UtcNow;
-            db.Revisiones.Update(revision);
-        }
+        await CerrarRevisionAsync(id, usuarioId);
 
         db.Archivos.Update(archivo);
 
@@ -189,6 +196,20 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
             Ok = true,
             HttpCode = HttpStatusCode.OK
         };
+    }
+
+    private async Task CerrarRevisionAsync(int archivoId, Guid usuarioId)
+    {
+        var revision = await db.Revisiones
+            .Where(r => r.ArchivoPdfId == archivoId && r.UsuarioId == usuarioId)
+            .OrderByDescending(r => r.FechaInicioRevision)
+            .FirstOrDefaultAsync();
+
+        if (revision != null)
+        {
+            revision.FechaFinRevision = DateTime.UtcNow;
+            db.Revisiones.Update(revision);
+        }
     }
 
     public async Task<Respuesta> ReiniciaPdfZombies()

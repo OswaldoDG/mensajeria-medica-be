@@ -41,7 +41,7 @@ public interface IServicioPdf
     /// <param name="totalPaginas">Total de p[aginas del PDF</param>
     /// <param name="usuarioId">Identificado del usuario en sesion.</param>
     /// <returns>OK si el ajuste fue adecuado o false en caso contrario.</returns>
-    Task<Respuesta> CreaPartesPdf(int id, List<DtoParteDocumental> partes, int totalPaginas, Guid usuarioId);
+    Task<Respuesta> CreaPartesPdf(int id, DtoFinalizar dto, Guid usuarioId);
 
     /// <summary>
     /// Reinicia a estado Pendiente todos los PDFs que se encuentren en estado Zombie (EnRevision sin partes documentales en base a una fecha).

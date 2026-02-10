@@ -55,5 +55,10 @@ public enum EstadoRevision
     /// <summary>
     /// Estado finalizado sin errores.
     /// </summary>
-    FinalizadaConErrores = 13
+    FinalizadaConErrores = 13,
+
+    /// <summary>
+    /// Estado finalizado porque el Pdf presenta error al abrir.
+    /// </summary>
+    PdfInvalido = 14
 }
