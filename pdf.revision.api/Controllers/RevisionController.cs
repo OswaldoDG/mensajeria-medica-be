@@ -45,7 +45,7 @@ public class RevisionController(ILogger<RevisionController> logger, IServicioPdf
             }
             else
             {
-                return ActionFromCode(respuesta!.HttpCode, respuesta.Error!.Codigo);
+                return ActionFromCode(respuesta!.HttpCode, respuesta.Error!);
             }
 
         }
@@ -71,7 +71,7 @@ public class RevisionController(ILogger<RevisionController> logger, IServicioPdf
     public async Task<ActionResult> FinalizarPorId(int id, [FromBody] DtoFinalizar dto)
     {
         logger.LogInformation("Obteniendo el PDF {Id}", id);
-        var respuesta = await servicioPdf.CreaPartesPdf(id, dto.Partes, dto.TotalPaginas, UsuarioGuid!.Value);
+        var respuesta = await servicioPdf.CreaPartesPdf(id, dto, UsuarioGuid!.Value);
 
         if (!respuesta.Ok)
         {

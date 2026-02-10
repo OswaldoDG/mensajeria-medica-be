@@ -14,4 +14,9 @@ public class DtoFinalizar
     /// Total de paginas del PDF que se esta separando.
     /// </summary>
     public int TotalPaginas { get; set; }
+
+    /// <summary>
+    /// Estado de finalizacion del PDF.
+    /// </summary>
+    public EstadoRevision? EstadoRevision { get; set; }
 }
