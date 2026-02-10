@@ -21,6 +21,7 @@ namespace pdf.revision.servicios;
 
 public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfiguration configuration, IDistributedCache cache) : IServicioPdf
 {
+    private readonly object _lock = new object();
     private readonly string connectionString = configuration!.GetValue<string>("azure:blob:connectionString")!;
     private readonly string containerpdfs = configuration!.GetValue<string>("azure:blob:containerpdfs")!;
     private readonly string folderpdfs = configuration!.GetValue<string>("azure:blob:folderpdfs")!;
@@ -52,62 +53,64 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
     public async Task<RespuestaPayload<DtoArchivo>> SiguientePendiente(Guid usuarioId)
     {
         await ReiniciaPdfZombies();
-        bool buscando = true;
-        ArchivoPdf? archivo = null;
-        while (buscando)
+        lock (_lock)
         {
-            ArchivoPdf? siguiente = await db.Archivos.Where(a => a.Estado == EstadoRevision.Pendiente && a.UsuarioId == null).OrderByDescending(a => a.Prioridad).FirstOrDefaultAsync();
-
-            if (siguiente is null)
+            bool buscando = true;
+            ArchivoPdf? archivo = null;
+            while (buscando)
             {
-                return new RespuestaPayload<DtoArchivo>
+                ArchivoPdf? siguiente = db.Archivos.Where(a => a.Estado == EstadoRevision.Pendiente && a.UsuarioId == null).OrderByDescending(a => a.Prioridad).FirstOrDefault();
+
+                if (siguiente is null)
                 {
-                    Payload = null,
-                    Error = new ErrorProceso
+                    return new RespuestaPayload<DtoArchivo>
                     {
-                        Codigo = "NO_PENDIENTES",
-                        Mensaje = "No hay archivos pendientes para revisión.",
-                        HttpCode = HttpStatusCode.NotFound
-                    }
-                };
+                        Payload = null,
+                        Error = new ErrorProceso
+                        {
+                            Codigo = "NO_PENDIENTES",
+                            Mensaje = "No hay archivos pendientes para revisión.",
+                            HttpCode = HttpStatusCode.NotFound
+                        }
+                    };
+                }
+
+                siguiente.Estado = EstadoRevision.EnCurso;
+                siguiente.UltimaRevision = DateTime.UtcNow;
+                siguiente.UsuarioId = usuarioId;
+                db.SaveChanges();
+
+                archivo = db.Archivos.AsNoTracking<ArchivoPdf>().FirstOrDefault(a => a.Id == siguiente.Id);
+                if (archivo!.UsuarioId == usuarioId)
+                {
+                    break;
+                }
             }
 
-            siguiente.Estado = EstadoRevision.EnCurso;
-            siguiente.UltimaRevision = DateTime.UtcNow;
-            siguiente.UsuarioId = usuarioId;
-            await db.SaveChangesAsync();
-
-            await Task.Delay(250);
-            archivo = await db.Archivos.AsNoTracking<ArchivoPdf>().FirstOrDefaultAsync(a => a.Id == siguiente.Id);
-            if (archivo!.UsuarioId == usuarioId)
+            var revision = new RevisionPdf
             {
-                break;
-            }
+                ArchivoPdfId = archivo!.Id,
+                UsuarioId = usuarioId,
+                FechaInicioRevision = DateTime.UtcNow
+            };
+
+            db.Revisiones.Add(revision);
+
+            db.SaveChanges();
+
+            var dto = new DtoArchivo
+            {
+                Id = archivo.Id,
+                Nombre = archivo.Nombre,
+                TokenSAS = GeneraTokenSAS(archivo.Nombre),
+            };
+
+            return new RespuestaPayload<DtoArchivo>
+            {
+                Payload = dto,
+                HttpCode = HttpStatusCode.OK
+            };
         }
-
-        var revision = new RevisionPdf
-        {
-            ArchivoPdfId = archivo!.Id,
-            UsuarioId = usuarioId,
-            FechaInicioRevision = DateTime.UtcNow
-        };
-
-        db.Revisiones.Add(revision);
-
-        await db.SaveChangesAsync();
-
-        var dto = new DtoArchivo
-        {
-            Id = archivo.Id,
-            Nombre = archivo.Nombre,
-            TokenSAS = GeneraTokenSAS(archivo.Nombre),
-        };
-
-        return new RespuestaPayload<DtoArchivo>
-        {
-            Payload = dto,
-            HttpCode = HttpStatusCode.OK
-        };
     }
 
     public async Task<Respuesta> CreaPartesPdf(int id, List<DtoParteDocumental> partes, int totalPaginas, Guid usuarioId)
@@ -142,7 +145,7 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
             };
         }
 
-        if (partes.Count > 0 )
+        if (partes.Count > 0)
         {
             if (archivo.Partes == null)
                 archivo.Partes = new List<ParteDocumental>();
@@ -283,7 +286,7 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
         try
         {
             var documentos = await db.TiposDocumento.ToListAsync();
-            var lista = documentos.Select(d => new DtoTipoDoc() { Nombre = d.Nombre, Id = d.Id , Tecla = d.Tecla }).OrderBy(d => d.Nombre).ToList();
+            var lista = documentos.Select(d => new DtoTipoDoc() { Nombre = d.Nombre, Id = d.Id, Tecla = d.Tecla }).OrderBy(d => d.Nombre).ToList();
             respuesta.Ok = true;
             respuesta.Payload = lista;
         }
@@ -304,7 +307,7 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
 
             var containerClient = CrearContainerDesdeConfiguracion(_blobServiceClient);
 
-            await foreach (BlobItem blobItem in containerClient.GetBlobsAsync(prefix:nombreBlob))
+            await foreach (BlobItem blobItem in containerClient.GetBlobsAsync(prefix: nombreBlob))
             {
                 var blobClient = containerClient.GetBlobClient(blobItem.Name);
 

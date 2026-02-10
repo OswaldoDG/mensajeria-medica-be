@@ -131,7 +131,7 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
                         var respuesta = interprete.Parse(contenido);
                         if (respuesta.Contacto!.DatosValidos)
                         {
-
+                            logger.LogDebug("Datos validos: {NombreArchivo}", nombreArchivo);
                             var mensaje = new Mensaje()
                             {
                                 Hash = hash!,
@@ -155,12 +155,14 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
                                     mensaje.Telefono = whatsappConfig.PrefijoDefaultPais + mensaje.Telefono;
                                 }
 
+                                logger.LogDebug("Enviando whatsapp: {NombreArchivo}", nombreArchivo);
                                 var wresult = await EnviaMensajeWhats(mensaje);
 
                                 mensaje.Estado = wresult ? EstadoMensaje.Enviado : EstadoMensaje.FallidoWhatsApp;
                             }
                             else
                             {
+                                logger.LogDebug("Sin telefono: {NombreArchivo}", nombreArchivo);
                                 mensaje.Estado = EstadoMensaje.NumTelInvalido;
                             }
 
@@ -227,6 +229,7 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
                 {
                     destino = destino + "." + DateTime.UtcNow.Ticks;
                 }
+                logger.LogDebug("Copiando: {NombreArchivo}", destino);
                 File.Move(sourcePath, destino);
             }
         }

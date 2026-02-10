@@ -38,8 +38,7 @@ public class InterpreteHL7(ILogger<InterpreteHL7> logger, IConfiguration config)
                     var apellido = n.Length > 0 ? n[0] : "";
                     var nombre = n.Length > 1 ? n[1] : "";
                     var segundo = n.Length > 2 ? n[2] : "";
-
-                    contacto.NombreContacto = string.Join(" ", new[] { nombre, segundo, apellido }.Where(x => !string.IsNullOrWhiteSpace(x)));
+                    contacto.NombreContacto = $"{nombre} {apellido} {segundo}".Trim().Replace("  ", " ");
                 }
 
                 if (partes.Length > 11 && !string.IsNullOrWhiteSpace(partes[11]))

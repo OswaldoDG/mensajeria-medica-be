@@ -31,7 +31,6 @@ namespace pdf.revision.api
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddTransient<IServicioPdf, ServicioPdf>();
-
             var app = builder.Build();
 
 
