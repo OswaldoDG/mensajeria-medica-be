@@ -1,5 +1,6 @@
 ﻿using comunes.respuestas;
 using mensajeriamedica.model.comunicaciones.centroscostos;
+using mensajeriamedica.model.comunicaciones.centroscostos.dtos;
 
 namespace mensajeriamedica.services.comunicaciones.servicios;
 
@@ -32,4 +33,5 @@ public interface IServicioCentroCostos
     Task<Respuesta> AgregaUsuarioCentroCostos(int centroCostosId, Guid UsuarioID);
 
     Task<Respuesta> EliminaUsuarioCentroCostos(int centroCostosId, Guid UsuarioID);
+    Task<RespuestaPayload<List<DtoUsuario>>> ObtieneListaUsuarios();
 }

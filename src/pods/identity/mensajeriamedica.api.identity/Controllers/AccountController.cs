@@ -5,6 +5,7 @@ using mensajeriamedica.services.identity.registro;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using OpenIddict.Validation.AspNetCore;
 using Swashbuckle.AspNetCore.Annotations;
@@ -98,5 +99,17 @@ public class AccountController(ILogger<AccountController> logger, IServicioRegis
         var roles = await userManager.GetRolesAsync(user);
 
         return Ok(roles.ToList());
+    }
+
+    [SwaggerOperation("Obtiene lista de los usuarios")]
+    [SwaggerResponse(statusCode: 200, type: typeof(List<DtoUsuario>), description: "Lista de Usuarios")]
+    [SwaggerResponse(statusCode: 404, description: "Registro no encontrado")]
+    [SwaggerResponse(statusCode: 500, description: "Error al localizar registro")]
+    [HttpGet("usuarios/lista")]
+    public async Task<ActionResult<List<DtoUsuario>>> ObtieneListaUsuario()
+    {
+        var usuarios = await userManager.Users.Select(u => new DtoUsuario{Id = Guid.Parse(u.Id) ,Email = u.Email}).ToListAsync();
+
+        return Ok(usuarios);
     }
 }

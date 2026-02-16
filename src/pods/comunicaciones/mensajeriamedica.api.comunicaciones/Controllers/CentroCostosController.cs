@@ -1,16 +1,27 @@
-﻿using comunes.respuestas;
+﻿using comunes.busqueda;
+using comunes.respuestas;
 using mensajeriamedica.model.comunicaciones.centroscostos;
+using mensajeriamedica.model.comunicaciones.centroscostos.dtos;
+using mensajeriamedica.model.comunicaciones.mensajes;
 using mensajeriamedica.services.comunicaciones.servicios;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Net;
 
 namespace mensajeriamedica.api.comunicaciones.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CentroCostosController(ILogger<CentroCostosController> logger, IServicioCentroCostos servicioCentroCostos) : ControllerBase
     {
         [HttpGet]
+        [SwaggerOperation(Description = "Obtiene una lista de Centros de Costos.", OperationId = "ObtieneCentroCostos")]
+        [SwaggerResponse(statusCode: 200, type: typeof(List<CentroCostos>), description: "Lista Centros de Costos")]
+        [SwaggerResponse(statusCode: 409, description: "Datos incorrectos")]
+        [SwaggerResponse(statusCode: 403, description: "Sin acceso")]
+        [SwaggerResponse(statusCode: 401, description: "No autorizado")]
         public async Task<ActionResult<List<CentroCostos>>> ObtieneCentroCostos([FromQuery(Name = "eliminados")] bool? eliminados = false)
         {
             var respuesta = await servicioCentroCostos.ObtieneCentroCostos(eliminados.Value);
@@ -24,6 +35,11 @@ namespace mensajeriamedica.api.comunicaciones.Controllers
         }
 
         [HttpPost]
+        [SwaggerOperation(Description = "Crea un centro de costos.", OperationId = "CreaCentroCostos")]
+        [SwaggerResponse(statusCode: 200, type: typeof(CentroCostos), description: "Centro de Costos Creado")]
+        [SwaggerResponse(statusCode: 409, description: "Datos incorrectos")]
+        [SwaggerResponse(statusCode: 403, description: "Sin acceso")]
+        [SwaggerResponse(statusCode: 401, description: "No autorizado")]
         public async Task<ActionResult<CentroCostos>> CreaCentroCostos([FromBody] CentroCostosDto dto)
         {
             var respuesta = await servicioCentroCostos.CreaCentroCostos(dto.Nombre);
@@ -37,7 +53,11 @@ namespace mensajeriamedica.api.comunicaciones.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<CentroCostos>> ActualizaCentroCostos([FromRoute] int id, [FromBody] CentroCostosDto dto)
+        [SwaggerOperation(Description = "Actualiza un Centro de Costos.", OperationId = "CreaCentroCostos")]
+        [SwaggerResponse(statusCode: 409, description: "Datos incorrectos")]
+        [SwaggerResponse(statusCode: 403, description: "Sin acceso")]
+        [SwaggerResponse(statusCode: 401, description: "No autorizado")]
+        public async Task<ActionResult> ActualizaCentroCostos([FromRoute] int id, [FromBody] CentroCostosDto dto)
         {
             var respuesta = await servicioCentroCostos.ActualizaCentroCostos(id, dto.Nombre);
             if (!respuesta.Ok)
@@ -50,7 +70,11 @@ namespace mensajeriamedica.api.comunicaciones.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<CentroCostos>> EliminaCentroCostos([FromRoute] int id)
+        [SwaggerOperation(Description = "Elimina un centro de costos.", OperationId = "EliminaCentroCostos")]
+        [SwaggerResponse(statusCode: 409, description: "Datos incorrectos")]
+        [SwaggerResponse(statusCode: 403, description: "Sin acceso")]
+        [SwaggerResponse(statusCode: 401, description: "No autorizado")]
+        public async Task<ActionResult> EliminaCentroCostos([FromRoute] int id)
         {
             var respuesta = await servicioCentroCostos.EliminaCentroCostos(id);
             if (!respuesta.Ok)
@@ -63,6 +87,11 @@ namespace mensajeriamedica.api.comunicaciones.Controllers
         }
 
         [HttpPost("{id}/unidad")]
+        [SwaggerOperation(Description = "Crea Unidad de Costos.", OperationId = "CreaUnidadCentroCostos")]
+        [SwaggerResponse(statusCode: 200, type: typeof(UnidadCostos), description: "Unidad de Costos Creada")]
+        [SwaggerResponse(statusCode: 409, description: "Datos incorrectos")]
+        [SwaggerResponse(statusCode: 403, description: "Sin acceso")]
+        [SwaggerResponse(statusCode: 401, description: "No autorizado")]
         public async Task<ActionResult<UnidadCostos>> CreaUnidadCentroCostos([FromRoute] int id, [FromBody] UnidadCostosDto dto)
         {
             var respuesta = await servicioCentroCostos.CreaUnidadCostos(id, dto.Nombre, dto.Clave);
@@ -76,6 +105,10 @@ namespace mensajeriamedica.api.comunicaciones.Controllers
         }
 
         [HttpPost("{id}/unidad/{uid}")]
+        [SwaggerOperation(Description = "Actualiza Unidad de Costos.", OperationId = "ActualizaUnidadCentroCostos")]
+        [SwaggerResponse(statusCode: 409, description: "Datos incorrectos")]
+        [SwaggerResponse(statusCode: 403, description: "Sin acceso")]
+        [SwaggerResponse(statusCode: 401, description: "No autorizado")]
         public async Task<ActionResult<UnidadCostos>> ActualizaUnidadCentroCostos([FromRoute] int id, [FromRoute] int uid, [FromBody] UnidadCostosDto dto)
         {
             var respuesta = await servicioCentroCostos.ActualizaUnidadCostos(id, uid, dto.Nombre, dto.Clave);
@@ -89,6 +122,10 @@ namespace mensajeriamedica.api.comunicaciones.Controllers
         }
 
         [HttpDelete("{id}/unidad/{uid}")]
+        [SwaggerOperation(Description = "Elimina Unidad de Costos.", OperationId = "EliminaUnidadCentroCostos")]
+        [SwaggerResponse(statusCode: 409, description: "Datos incorrectos")]
+        [SwaggerResponse(statusCode: 403, description: "Sin acceso")]
+        [SwaggerResponse(statusCode: 401, description: "No autorizado")]
         public async Task<ActionResult<UnidadCostos>> EliminaUnidadCentroCostos([FromRoute] int id, [FromRoute] int uid)
         {
             var respuesta = await servicioCentroCostos.EliminaUnidadCostos(id, uid);
@@ -99,6 +136,24 @@ namespace mensajeriamedica.api.comunicaciones.Controllers
             }
 
             return Ok();
+        }
+
+        [HttpGet("obtiene/usuarios")]
+        [SwaggerOperation(Description = "Obtiene Lista de Usuarios", OperationId = "ObtieneListaUsuarios")]
+        [SwaggerResponse(statusCode: 200, type: typeof(List<CentroCostos>), description: "Lista Centros de Costos")]
+        [SwaggerResponse(statusCode: 409, description: "Datos incorrectos")]
+        [SwaggerResponse(statusCode: 403, description: "Sin acceso")]
+        [SwaggerResponse(statusCode: 401, description: "No autorizado")]
+        public async Task<ActionResult<List<DtoUsuario>>> ObtieneListaUsuarios()
+        {
+            var respuesta = await servicioCentroCostos.ObtieneListaUsuarios();
+            if (!respuesta.Ok)
+            {
+
+                return ActionFromCode(respuesta!.HttpCode, respuesta.Error!.Mensaje);
+            }
+
+            return Ok(respuesta.Payload);
         }
 
         [NonAction]

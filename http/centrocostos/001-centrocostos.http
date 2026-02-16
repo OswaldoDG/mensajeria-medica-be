@@ -15,20 +15,20 @@ grant_type=password
 @authToken = {{getToken.response.body.access_token}}
 
 # ==========================================
-#              CENTROS DE COSTOS
+#            CENTROS DE COSTOS
 # ==========================================
 ### Obtener Centro de Costos (Solo Activos)
 # @name ObtieneCentroCostos
-GET {{MENSAJERIA_URL_COMUNICACIONES}}/api/CentroCostos
+GET {{MENSAJERIA_URL_COMUNICACIONES}}/api/CentroCostos HTTP/1.1
 Authorization: Bearer {{authToken}}
 
 ### Obtener Centro de Costos (Incluyendo Eliminados)
-GET {{MENSAJERIA_URL_COMUNICACIONES}}/api/CentroCostos?eliminados=true
+GET {{MENSAJERIA_URL_COMUNICACIONES}}/api/CentroCostos?eliminados=true HTTP/1.1
 Authorization: Bearer {{authToken}}
 
 ### Crear Centro de Costos
 # @name crearCentro
-POST {{MENSAJERIA_URL_COMUNICACIONES}}/api/CentroCostos
+POST {{MENSAJERIA_URL_COMUNICACIONES}}/api/CentroCostos HTTP/1.1
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
@@ -39,7 +39,7 @@ Content-Type: application/json
 ### Actualizar Centro de Costos
 @idCentro = {{crearCentro.response.body.id}}
 # @name ActualizaCentroCostos
-PUT {{MENSAJERIA_URL_COMUNICACIONES}}/api/CentroCostos/{{idCentro}}
+PUT {{MENSAJERIA_URL_COMUNICACIONES}}/api/CentroCostos/{{idCentro}} HTTP/1.1
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
@@ -49,7 +49,7 @@ Content-Type: application/json
 
 ### Eliminar Centro de Costos
 # @name EliminaCentroCostos
-DELETE {{MENSAJERIA_URL_COMUNICACIONES}}/api/CentroCostos/{{idCentro}}
+DELETE {{MENSAJERIA_URL_COMUNICACIONES}}/api/CentroCostos/{{idCentro}} HTTP/1.1
 Authorization: Bearer {{authToken}}
 
 # ==========================================
@@ -58,7 +58,7 @@ Authorization: Bearer {{authToken}}
 
 ### Crear Unidad de Centro de Costos
 # @name crearUnidad
-POST {{MENSAJERIA_URL_COMUNICACIONES}}/api/CentroCostos/{{idCentro}}/unidad
+POST {{MENSAJERIA_URL_COMUNICACIONES}}/api/CentroCostos/{{idCentro}}/unidad HTTP/1.1
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
@@ -72,7 +72,7 @@ Content-Type: application/json
 
 ###@idUnidad = 2
 # @name ActualizarUnidadCostos
-POST {{MENSAJERIA_URL_COMUNICACIONES}}/api/CentroCostos/{{idCentro}}/unidad/{{idUnidad}}
+POST {{MENSAJERIA_URL_COMUNICACIONES}}/api/CentroCostos/{{idCentro}}/unidad/{{idUnidad}} HTTP/1.1
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
@@ -83,5 +83,16 @@ Content-Type: application/json
 
 ### Eliminar Unidad de Centro de Costos
 # @name EliminarUnidadCostos
-DELETE {{MENSAJERIA_URL_COMUNICACIONES}}/api/CentroCostos/{{idCentro}}/unidad/{{idUnidad}}
+DELETE {{MENSAJERIA_URL_COMUNICACIONES}}/api/CentroCostos/{{idCentro}}/unidad/{{idUnidad}} HTTP/1.1
 Authorization: Bearer {{authToken}}
+
+###
+# ==========================================
+#        USUARIOS DE CENTRO DE COSTOS
+# ==========================================
+# Obtiener una lista de usuarios desde Identity.
+# @name obtenerListaUsuarios
+
+GET {{MENSAJERIA_URL_COMUNICACIONES}}/api/CentroCostos/obtiene/usuarios HTTP/1.1
+Authorization: Bearer {{authToken}}
+###

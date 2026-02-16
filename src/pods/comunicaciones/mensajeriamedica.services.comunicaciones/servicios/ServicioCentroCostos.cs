@@ -1,13 +1,19 @@
 ﻿using comunes.extensiones;
+using comunes.proxies.proxygenerico;
 using comunes.respuestas;
 using mensajeriamedica.model.comunicaciones.centroscostos;
+using mensajeriamedica.model.comunicaciones.centroscostos.dtos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Win32;
+using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace mensajeriamedica.services.comunicaciones.servicios;
 
-public class ServicioCentroCostos(ILogger<ServicioCentroCostos> logger, DbContextMensajeria db) : IServicioCentroCostos
+public class ServicioCentroCostos(ILogger<ServicioCentroCostos> logger, DbContextMensajeria db, IProxyGenericoInterservicio proxy) : IServicioCentroCostos
 {
 
     public async Task<RespuestaPayload<CentroCostos>> CreaCentroCostos(string nombre)
@@ -459,6 +465,41 @@ public class ServicioCentroCostos(ILogger<ServicioCentroCostos> logger, DbContex
                 respuesta.Payload = centroCostosActivos;
             }
 
+            return respuesta;
+        }
+        catch (Exception ex)
+        {
+            respuesta.Error = new ErrorProceso()
+            {
+                Mensaje = ex.Message,
+                Codigo = "ErrorInterno",
+                HttpCode = System.Net.HttpStatusCode.InternalServerError
+            };
+            logger.LogError(ex, "ServicioCentroCostros-EliminaUsuarioCentroCostos Error {Mensaje}", ex.Message);
+            return respuesta;
+        }
+    }
+
+    public async Task<RespuestaPayload<List<DtoUsuario>>> ObtieneListaUsuarios()
+    {
+        logger.LogDebug("ServicioCentroCostos - ObtieneListaUsuarios");
+        RespuestaPayload<List<DtoUsuario>> respuesta = new RespuestaPayload<List<DtoUsuario>>();
+        try
+        {
+            var respuestaProxy = await proxy.JsonRespuestaSerializada("identidad", "usuarios/lista", "ObtieneListaUsuarios", VerboHttp.GET, null);
+
+            if (!respuestaProxy.Ok)
+            {
+                logger.LogError("ServicioCentroCostos - ObtieneListaUsuarios error al obtener la lista de usuarios  {Error}.", $"{respuestaProxy.HttpCode} {respuestaProxy.Error?.Codigo} {respuestaProxy.Error?.Mensaje}");
+
+                respuesta.Error = respuestaProxy.Error;
+                respuesta.Error!.Codigo = "Error al obtener la lista de usaurios";
+                respuesta.HttpCode = HttpStatusCode.InternalServerError;
+                return respuesta;
+            }
+
+            respuesta.Payload = JsonConvert.DeserializeObject<List<DtoUsuario>>(respuestaProxy.Payload);
+            respuesta.Ok = true;
             return respuesta;
         }
         catch (Exception ex)
