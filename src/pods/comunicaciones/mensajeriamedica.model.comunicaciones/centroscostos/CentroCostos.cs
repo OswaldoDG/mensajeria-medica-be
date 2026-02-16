@@ -18,13 +18,13 @@ public class CentroCostos
     // MAXLEN 200
 
     /// <summary>
-    /// Especifica si el centro de costos se encuentra eliminado, La eliminación es virtua para poder tener estadisticas de los centros de costos eliminados, 
+    /// Especifica si el centro de costos se encuentra eliminado, La eliminación es virtual para poder tener estadisticas de los centros de costos eliminados,
     /// pero no se pueden asignar unidades de costos ni usuarios a un centro de costos eliminado.
     /// </summary>
     public bool Eliminado { get; set; } = false;
 
     /// <summary>
-    /// UNidades de costos asociadas al centro.
+    /// Unidades de costos asociadas al centro.
     /// </summary>
     public List<UnidadCostos> Unidades { get; set; } = [];
 

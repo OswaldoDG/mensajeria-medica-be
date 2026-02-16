@@ -1,0 +1,87 @@
+# ==========================================
+#               AUTENTICACIÓN
+# ==========================================
+# @name getToken
+POST {{URL_IDENTITY}}/connect/token HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password
+&username={{USUARIO_CLIENTE_EMAIL}}
+&password={{USUARIO_CLIENTE_PASSWORD}}
+&scope=offline_access
+&client_id=mensajeriamedica-password
+
+###
+@authToken = {{getToken.response.body.access_token}}
+
+# ==========================================
+#              CENTROS DE COSTOS
+# ==========================================
+### Obtener Centro de Costos (Solo Activos)
+# @name ObtieneCentroCostos
+GET {{MENSAJERIA_URL_COMUNICACIONES}}/api/CentroCostos
+Authorization: Bearer {{authToken}}
+
+### Obtener Centro de Costos (Incluyendo Eliminados)
+GET {{MENSAJERIA_URL_COMUNICACIONES}}/api/CentroCostos?eliminados=true
+Authorization: Bearer {{authToken}}
+
+### Crear Centro de Costos
+# @name crearCentro
+POST {{MENSAJERIA_URL_COMUNICACIONES}}/api/CentroCostos
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "nombre": "Hospital Dummy2"
+}
+
+### Actualizar Centro de Costos
+@idCentro = {{crearCentro.response.body.id}}
+# @name ActualizaCentroCostos
+PUT {{MENSAJERIA_URL_COMUNICACIONES}}/api/CentroCostos/{{idCentro}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "nombre": "Hospital Dummy2"
+}
+
+### Eliminar Centro de Costos
+# @name EliminaCentroCostos
+DELETE {{MENSAJERIA_URL_COMUNICACIONES}}/api/CentroCostos/{{idCentro}}
+Authorization: Bearer {{authToken}}
+
+# ==========================================
+#       UNIDADES DE CENTRO DE COSTOS
+# ==========================================
+
+### Crear Unidad de Centro de Costos
+# @name crearUnidad
+POST {{MENSAJERIA_URL_COMUNICACIONES}}/api/CentroCostos/{{idCentro}}/unidad
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "nombre": "Gabineet Ultrasonidos",
+  "clave": "MDI TRI ST"
+}
+
+### Actualizar Unidad de Centro de Costos
+@idUnidad = {{crearUnidad.response.body.id}}
+
+###@idUnidad = 2
+# @name ActualizarUnidadCostos
+POST {{MENSAJERIA_URL_COMUNICACIONES}}/api/CentroCostos/{{idCentro}}/unidad/{{idUnidad}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "nombre": "Gabineet Ultrasonidos",
+  "clave": "MDI TRI ST"
+}
+
+### Eliminar Unidad de Centro de Costos
+# @name EliminarUnidadCostos
+DELETE {{MENSAJERIA_URL_COMUNICACIONES}}/api/CentroCostos/{{idCentro}}/unidad/{{idUnidad}}
+Authorization: Bearer {{authToken}}
