@@ -243,7 +243,9 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
     {
         var accessToken = this.whatsappConfig.AccessToken;
         var phoneNumberId = this.whatsappConfig.PhoneNumber;
-        var recipient = m.Telefono; 
+        var recipient = m.Telefono;
+
+        logger.LogInformation("Telefono {Telefono}", recipient);
 
         using var client = new HttpClient();
 
@@ -267,7 +269,7 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
                             type = "header",
                             parameters = new[]
                             {
-                                new { type = "text", text = "Hospítal Radiológico" }, // dynamic parameter
+                                new { type = "text", text = m.SucursalId }, // dynamic parameter
                             }
                         },
                         new {
@@ -285,11 +287,15 @@ public class ProcesadorArchivos(ILogger<ProcesadorArchivos> logger, IInterpreteH
 
         var response = await client.SendAsync(request);
 
-        if (!response.IsSuccessStatusCode)
+        logger.LogInformation("Respuesta whatsapp {Code}", response.StatusCode);
+
+        try
         {
-            var result = await response.Content.ReadAsStringAsync();
+            string result = await response.Content.ReadAsStringAsync();
             logger.LogError("Error procesando whatsapp {Message}", result);
         }
+        catch (Exception)
+        {}
 
         return response.IsSuccessStatusCode;
     }

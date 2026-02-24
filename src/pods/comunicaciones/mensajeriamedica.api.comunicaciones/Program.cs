@@ -34,6 +34,7 @@ public class Program
 
         builder.Services.AddHttpClient();
         builder.Services.AddHostedService<ProcesadorArchivos>();
+        builder.Services.AddTransient<IServicioCentroCostos, ServicioCentroCostos>();
         builder.Services.AddTransient<IServicioMensajes, ServicioMensajes>();
         builder.Services.AddSingleton<IInterpreteHL7, InterpreteHL7>();
         builder.Services.AddDistributedMemoryCache();
