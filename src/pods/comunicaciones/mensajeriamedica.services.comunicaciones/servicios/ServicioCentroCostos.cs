@@ -362,6 +362,7 @@ public class ServicioCentroCostos(ILogger<ServicioCentroCostos> logger, DbContex
             centroCostos.Eliminado = true;
             db.CentroCostos.Update(centroCostos);
             await db.SaveChangesAsync();
+            respuesta.Ok = true;
             logger.LogDebug("ServicioCentroCostos - EliminaCentroCostos exitoso");
             return respuesta;
         }
@@ -480,7 +481,7 @@ public class ServicioCentroCostos(ILogger<ServicioCentroCostos> logger, DbContex
         }
     }
 
-    public async Task<RespuestaPayload<List<DtoUsuario>>> ObtieneListaUsuarios()
+    public async Task<RespuestaPayload<List<DtoUsuario>>> ObtieneListaUsuarios(Guid UsuarioId)
     {
         logger.LogDebug("ServicioCentroCostos - ObtieneListaUsuarios");
         RespuestaPayload<List<DtoUsuario>> respuesta = new RespuestaPayload<List<DtoUsuario>>();
@@ -498,7 +499,13 @@ public class ServicioCentroCostos(ILogger<ServicioCentroCostos> logger, DbContex
                 return respuesta;
             }
 
-            respuesta.Payload = JsonConvert.DeserializeObject<List<DtoUsuario>>(respuestaProxy.Payload);
+            var usuariosSincentro = JsonConvert.DeserializeObject<List<DtoUsuario>>(respuestaProxy.Payload);
+
+            var idsRegistrados = await db.UsuarioCentrosCostos.Select(x => x.UsuarioId).ToListAsync();
+
+            usuariosSincentro = usuariosSincentro.Where(u => !idsRegistrados.Contains(u.Id) && u.Id != UsuarioId).ToList();
+
+            respuesta.Payload = usuariosSincentro;
             respuesta.Ok = true;
             return respuesta;
         }
@@ -510,7 +517,55 @@ public class ServicioCentroCostos(ILogger<ServicioCentroCostos> logger, DbContex
                 Codigo = "ErrorInterno",
                 HttpCode = System.Net.HttpStatusCode.InternalServerError
             };
-            logger.LogError(ex, "ServicioCentroCostros-EliminaUsuarioCentroCostos Error {Mensaje}", ex.Message);
+            logger.LogError(ex, "ServicioCentroCostros-ObtieneListaUsuarios Error {Mensaje}", ex.Message);
+            return respuesta;
+        }
+    }
+
+    public async Task<RespuestaPayload<List<UnidadCostos>>> ObtieneUnidadCostos(int centroCostosId)
+    {
+        logger.LogDebug("ServicioCentroCostos - ObtieneUnidadCostos");
+        RespuestaPayload<List<UnidadCostos>> respuesta = new RespuestaPayload<List<UnidadCostos>>();
+        try
+        {
+            var unidadCostos = db.UnidadCostos.Where(u => u.CentroCostosId == centroCostosId).ToList();
+            respuesta.Ok = true;
+            respuesta.Payload = unidadCostos;
+            return respuesta;
+        }
+        catch (Exception ex)
+        {
+            respuesta.Error = new ErrorProceso()
+            {
+                Mensaje = ex.Message,
+                Codigo = "ErrorInterno",
+                HttpCode = System.Net.HttpStatusCode.InternalServerError
+            };
+            logger.LogError(ex, "ServicioCentroCostros-ObtieneUnidadCostos Error {Mensaje}", ex.Message);
+            return respuesta;
+        }
+    }
+
+    public async Task<RespuestaPayload<List<UsuarioCentroCostos>>> ObtieneUsuariosCentroCostos(int centroCostosId)
+    {
+        logger.LogDebug("ServicioCentroCostos - ObtieneUsuariosCentroCostos");
+        RespuestaPayload<List<UsuarioCentroCostos>> respuesta = new RespuestaPayload<List<UsuarioCentroCostos>>();
+        try
+        {
+            var usuarioCentroCostos = db.UsuarioCentrosCostos.Where(u => u.CentroCostosId == centroCostosId).ToList();
+            respuesta.Ok = true;
+            respuesta.Payload = usuarioCentroCostos;
+            return respuesta;
+        }
+        catch (Exception ex)
+        {
+            respuesta.Error = new ErrorProceso()
+            {
+                Mensaje = ex.Message,
+                Codigo = "ErrorInterno",
+                HttpCode = System.Net.HttpStatusCode.InternalServerError
+            };
+            logger.LogError(ex, "ServicioCentroCostros-ObtieneUsuariosCentroCostos Error {Mensaje}", ex.Message);
             return respuesta;
         }
     }

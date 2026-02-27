@@ -23,6 +23,8 @@ public interface IServicioCentroCostos
     Task<RespuestaPayload<UnidadCostos>> CreaUnidadCostos(int centroCostosId, string nombre, string clave);
     Task<Respuesta> ActualizaUnidadCostos(int centroCostosId, int id, string nombre, string clave);
 
+    Task<RespuestaPayload<List<UnidadCostos>>> ObtieneUnidadCostos(int centroCostosId);
+
     /// <summary>
     /// Sólo deben oderse eliminar unidades si no hay mensajes con su clave en el campo SucursalId.
     /// </summary>
@@ -33,5 +35,6 @@ public interface IServicioCentroCostos
     Task<Respuesta> AgregaUsuarioCentroCostos(int centroCostosId, Guid UsuarioID);
 
     Task<Respuesta> EliminaUsuarioCentroCostos(int centroCostosId, Guid UsuarioID);
-    Task<RespuestaPayload<List<DtoUsuario>>> ObtieneListaUsuarios();
+    Task<RespuestaPayload<List<DtoUsuario>>> ObtieneListaUsuarios(Guid UsuarioId);
+    Task<RespuestaPayload<List<UsuarioCentroCostos>>> ObtieneUsuariosCentroCostos(int centroCostosId);
 }
