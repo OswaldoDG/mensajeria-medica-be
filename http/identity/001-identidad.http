@@ -1,0 +1,10 @@
+# @name RegistraUsuario
+
+POST {{URL_IDENTITY}}/usuario/registro
+Content-Type: application/json
+
+{
+  "email":"u5@demo.com",
+  "password": "Pa$$w0rd",
+  "code":"sp3rt0"
+}
