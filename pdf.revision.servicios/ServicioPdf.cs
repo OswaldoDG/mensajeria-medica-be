@@ -1,6 +1,4 @@
-﻿using System.Net;
-using System.Text.Json;
-using Azure.Storage.Blobs;
+﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Sas;
 using comunes.respuestas;
@@ -16,6 +14,9 @@ using pdf.revision.model.dtos;
 using pdf.revision.model.dtos.Nuevos;
 using pdf.revision.servicios.datos;
 using Polly;
+using System.ComponentModel.DataAnnotations;
+using System.Net;
+using System.Text.Json;
 
 namespace pdf.revision.servicios;
 
@@ -60,7 +61,6 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
             while (buscando)
             {
                 ArchivoPdf? siguiente = db.Archivos.Where(a => a.Estado == EstadoRevision.Pendiente && a.UsuarioId == null).OrderByDescending(a => a.Prioridad).FirstOrDefault();
-
                 if (siguiente is null)
                 {
                     return new RespuestaPayload<DtoArchivo>
@@ -115,9 +115,7 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
 
     public async Task<Respuesta> CreaPartesPdf(int id, DtoFinalizar dto, Guid usuarioId)
     {
-        var archivo = await db.Archivos
-            .Include(a => a.Partes)
-            .FirstOrDefaultAsync(a => a.Id == id);
+        var archivo = await db.Archivos.Include(a => a.Partes).FirstOrDefaultAsync(a => a.Id == id);
 
         if (archivo is null)
         {
@@ -460,5 +458,42 @@ order by DATE_FORMAT(CONVERT_TZ(r.FechaInicioRevision, '+00:00', '-06:00'), '%d-
         }
 
         return lista;
+    }
+
+    public async Task<Respuesta> ValidarAsigacionAsync(int archivoId, Guid usuarioId)
+    {
+        var asignaciones = await db.Revisiones.Where(a => a.ArchivoPdfId == archivoId).OrderBy(a => a.FechaInicioRevision).Take(2).ToListAsync();
+
+        if (asignaciones.Count == 1 && asignaciones[0].UsuarioId == usuarioId)
+        {
+            return new Respuesta { Ok = true };
+        }
+
+        if (asignaciones.Count > 1 && asignaciones[1].UsuarioId == usuarioId)
+        {
+            if (asignaciones[0].UsuarioId == usuarioId)
+            {
+                return new Respuesta { Ok = true };
+            }
+
+            if (asignaciones[1].UsuarioId == usuarioId)
+            {
+                db.Revisiones.Remove(asignaciones[1]);
+                await db.SaveChangesAsync();
+
+                return new Respuesta
+                {
+                    Ok = false,
+                    Error = new ErrorProceso
+                    {
+                        Codigo = "ServicioPdf - ValidarAsignacionAsync Conflicto usuario asignado concurrencia",
+                        Mensaje = "El Usuario en sesion no le pertenece el documento",
+                        HttpCode = HttpStatusCode.Conflict
+                    }
+                };
+            }
+        }
+
+        return new Respuesta { Ok = false };
     }
 }

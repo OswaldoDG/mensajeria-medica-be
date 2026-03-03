@@ -67,4 +67,12 @@ public interface IServicioPdf
     /// <param name="id">Id del usaurio.</param>
     /// <returns>Estadisticas.</returns>
     Task<List<DtoEstadisticasUsuarioDate>> ObtieneEstadisticasUsuario(Guid id);
+
+    /// <summary>
+    /// Valida el usuario asignado al documento.
+    /// </summary>
+    /// <param name="archivoId">Identificador único del documento.</param>
+    /// <param name="usuarioId">Identificador único del usuario.</param>
+    /// <returns>Retorno de operación.</returns>
+    Task<Respuesta> ValidarAsigacionAsync(int archivoId, Guid usuarioId);
 }

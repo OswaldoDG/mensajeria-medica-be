@@ -123,4 +123,17 @@ public class RevisionController(ILogger<RevisionController> logger, IServicioPdf
 
         return Ok(respuesta);
     }
+
+    [HttpGet("validacion/{id}")]
+    public async Task<IActionResult> ValidacionAsignacionAsync(int id)
+    {
+        var respuesta = await servicioPdf.ValidarAsigacionAsync(id, UsuarioGuid!.Value);
+
+        if (!respuesta.Ok)
+        {
+            return ActionFromCode(respuesta!.HttpCode, respuesta.Error!.Codigo);
+        }
+
+        return Ok(respuesta);
+    }
 }
