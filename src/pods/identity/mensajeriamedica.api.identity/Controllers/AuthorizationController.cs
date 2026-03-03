@@ -37,34 +37,39 @@ public class AuthorizationController : Controller
     {
         var request = HttpContext.GetOpenIddictServerRequest();
 
-        var versionCliente = request?.GetParameter("app_version")?.ToString();
-        var versionServidor = _configuration["VersionFe"];
+        bool validarVersion = _configuration.GetValue<bool>("HabilitarValidacionVersion");
 
-        if (string.IsNullOrEmpty(versionCliente))
+        if (validarVersion)
         {
-            return Forbid(
-                BuildError("invalid_request", "La version de la aplicacion es requerida."),
-                OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
-        }
+            var versionCliente = request?.GetParameter("app_version")?.ToString();
+            var versionServidor = _configuration["VersionFe"];
 
-        if (!Version.TryParse(versionCliente, out var verCliente) ||
-            !Version.TryParse(versionServidor, out var verServidor))
-        {
-            return Forbid(BuildError("invalid_request", "Formato de version invalido."),
-                OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
-        }
+            if (string.IsNullOrEmpty(versionCliente))
+            {
+                return Forbid(
+                    BuildError("invalid_request", "La version de la aplicacion es requerida."),
+                    OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+            }
 
-        if (Version.Parse(versionCliente) < Version.Parse(versionServidor))
-        {
-            return Forbid(
-                BuildError("invalid_client", "Debe actualizar la aplicacion."),
-                OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
-        }
+            if (!Version.TryParse(versionCliente, out var verCliente) ||
+                !Version.TryParse(versionServidor, out var verServidor))
+            {
+                return Forbid(BuildError("invalid_request", "Formato de version invalido."),
+                    OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+            }
 
-        if (verCliente > verServidor)
-        {
-            return Forbid(BuildError("invalid_client", "La version de la aplicacion no coincide"),
-                OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+            if (Version.Parse(versionCliente) < Version.Parse(versionServidor))
+            {
+                return Forbid(
+                    BuildError("invalid_client", "Debe actualizar la aplicacion."),
+                    OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+            }
+
+            if (verCliente > verServidor)
+            {
+                return Forbid(BuildError("invalid_client", "La version de la aplicacion no coincide"),
+                    OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+            }
         }
 
         if (request.IsClientCredentialsGrantType())
