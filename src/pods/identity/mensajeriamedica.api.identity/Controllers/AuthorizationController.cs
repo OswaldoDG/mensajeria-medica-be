@@ -18,22 +18,54 @@ public class AuthorizationController : Controller
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IOpenIddictApplicationManager _applicationManager;
     private readonly IOpenIddictScopeManager _scopeManager;
+    private readonly IConfiguration _configuration;
 
     public AuthorizationController(
         SignInManager<ApplicationUser> signInManager,
         UserManager<ApplicationUser> userManager,
-        IOpenIddictApplicationManager applicationManager, IOpenIddictScopeManager scopeManager)
+        IOpenIddictApplicationManager applicationManager, IOpenIddictScopeManager scopeManager, IConfiguration configuration)
     {
         _signInManager = signInManager;
         _userManager = userManager;
         _applicationManager = applicationManager;
         _scopeManager = scopeManager;
+        _configuration = configuration;
     }
 
     [HttpPost("connect/token"), IgnoreAntiforgeryToken, Produces("application/json")]
     public async Task<IActionResult> Exchange()
     {
         var request = HttpContext.GetOpenIddictServerRequest();
+
+        var versionCliente = request?.GetParameter("app_version")?.ToString();
+        var versionServidor = _configuration["VersionFe"];
+
+        if (string.IsNullOrEmpty(versionCliente))
+        {
+            return Forbid(
+                BuildError("invalid_request", "La version de la aplicacion es requerida."),
+                OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+        }
+
+        if (!Version.TryParse(versionCliente, out var verCliente) ||
+            !Version.TryParse(versionServidor, out var verServidor))
+        {
+            return Forbid(BuildError("invalid_request", "Formato de version invalido."),
+                OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+        }
+
+        if (Version.Parse(versionCliente) < Version.Parse(versionServidor))
+        {
+            return Forbid(
+                BuildError("invalid_client", "Debe actualizar la aplicacion."),
+                OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+        }
+
+        if (verCliente > verServidor)
+        {
+            return Forbid(BuildError("invalid_client", "La version de la aplicacion no coincide"),
+                OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+        }
 
         if (request.IsClientCredentialsGrantType())
         {
@@ -211,5 +243,14 @@ public class AuthorizationController : Controller
                 yield return Destinations.AccessToken;
                 yield break;
         }
+    }
+
+    private AuthenticationProperties BuildError(string error, string description)
+    {
+        return new AuthenticationProperties(new Dictionary<string, string>
+        {
+            [OpenIddictServerAspNetCoreConstants.Properties.Error] = error,
+            [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = description
+        });
     }
 }
