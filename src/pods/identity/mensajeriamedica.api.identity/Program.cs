@@ -142,6 +142,9 @@ public class Program
                        .AllowRefreshTokenFlow()
                        .AllowClientCredentialsFlow();
 
+                options.SetAccessTokenLifetime(TimeSpan.FromHours(1));
+                options.SetRefreshTokenLifetime(TimeSpan.FromDays(1));
+
                 // Accept anonymous clients (i.e clients that don't send a client_id).
                 // options.AcceptAnonymousClients();
 
