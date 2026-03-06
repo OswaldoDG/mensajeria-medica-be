@@ -176,7 +176,7 @@ public class ServicioCentroCostos(ILogger<ServicioCentroCostos> logger, DbContex
         }
     }
 
-    public async Task<Respuesta> AgregaUsuarioCentroCostos(int centroCostosId, Guid UsuarioID)
+    public async Task<Respuesta> AgregaUsuarioCentroCostos(int centroCostosId, Guid UsuarioID, string nombre)
     {
         logger.LogDebug("ServicioCentroCostos - AgregaUsuarioCentroCostos.");
         Respuesta respuesta = new Respuesta();
@@ -198,7 +198,8 @@ public class ServicioCentroCostos(ILogger<ServicioCentroCostos> logger, DbContex
             var user = new UsuarioCentroCostos()
             {
                 CentroCostosId = centroCostosId,
-                UsuarioId = UsuarioID
+                UsuarioId = UsuarioID,
+                Nombre = nombre
             };
 
             db.UsuarioCentrosCostos.Add(user);

@@ -8,6 +8,7 @@ public class UsuarioCentroCostos
     public int Id { get; set; }
     public int CentroCostosId { get; set; }
     public Guid UsuarioId { get; set; }
+    public string? Nombre { get; set; }
 
     /// <summary>
     /// Navegación.

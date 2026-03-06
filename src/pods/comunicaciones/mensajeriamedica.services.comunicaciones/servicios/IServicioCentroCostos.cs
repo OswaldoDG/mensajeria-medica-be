@@ -32,7 +32,7 @@ public interface IServicioCentroCostos
     /// <returns>Resultado.</returns>
     Task<Respuesta> EliminaUnidadCostos(int centroCostosId, int id);
 
-    Task<Respuesta> AgregaUsuarioCentroCostos(int centroCostosId, Guid UsuarioID);
+    Task<Respuesta> AgregaUsuarioCentroCostos(int centroCostosId, Guid UsuarioID, string nombre);
 
     Task<Respuesta> EliminaUsuarioCentroCostos(int centroCostosId, Guid UsuarioID);
     Task<RespuestaPayload<List<DtoUsuario>>> ObtieneListaUsuarios(Guid UsuarioId);

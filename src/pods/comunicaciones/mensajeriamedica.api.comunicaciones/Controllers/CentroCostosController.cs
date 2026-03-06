@@ -94,7 +94,7 @@ namespace mensajeriamedica.api.comunicaciones.Controllers
         [SwaggerResponse(statusCode: 403, description: "Sin acceso")]
         [SwaggerResponse(statusCode: 401, description: "No autorizado")]
         public async Task<ActionResult<UnidadCostos>> CreaUnidadCentroCostos([FromRoute] int id, [FromBody] UnidadCostosDto dto)
-        {
+            {
             var respuesta = await servicioCentroCostos.CreaUnidadCostos(id, dto.Nombre, dto.Clave);
             if (!respuesta.Ok)
             {
@@ -162,9 +162,14 @@ namespace mensajeriamedica.api.comunicaciones.Controllers
         [SwaggerResponse(statusCode: 409, description: "Datos incorrectos")]
         [SwaggerResponse(statusCode: 403, description: "Sin acceso")]
         [SwaggerResponse(statusCode: 401, description: "No autorizado")]
-        public async Task<ActionResult> AgregaUsuarioCentroCostos([FromRoute] int id, [FromRoute] string usuarioId)
+        public async Task<ActionResult> AgregaUsuarioCentroCostos([FromRoute] int id, [FromRoute] string usuarioId, [FromBody] DtoAgregarUsuario dto)
         {
-            var respuesta = await servicioCentroCostos.AgregaUsuarioCentroCostos(id, Guid.Parse(usuarioId));
+            if (id != dto.CentroCostosId && usuarioId != dto.UsuarioId)
+            {
+                return BadRequest();
+            }
+
+            var respuesta = await servicioCentroCostos.AgregaUsuarioCentroCostos(dto.CentroCostosId, Guid.Parse(dto.UsuarioId), dto.Nombre);
             if (!respuesta.Ok)
             {
 
