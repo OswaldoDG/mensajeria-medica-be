@@ -26,9 +26,15 @@ public class AccountController(ILogger<AccountController> logger, IServicioRegis
     public async Task<ActionResult> Registro([FromBody] RegisterViewModel registro)
     {
 
-        if(registro.Code != configuration.GetValue<string>("CodigoRegistro"))
+        var habilitarCodigo = configuration.GetValue<bool>("HabilitarCodigoRegistro");
+
+        if (habilitarCodigo)
         {
-            return BadRequest("Código de registro erróneo");
+            var codigoConfig = configuration.GetValue<string>("CodigoRegistro");
+            if (registro.Code != codigoConfig)
+            {
+                return BadRequest("Código de registro erróneo");
+            }
         }
 
         logger.LogDebug("AccountController-Registro");
@@ -108,7 +114,7 @@ public class AccountController(ILogger<AccountController> logger, IServicioRegis
     [HttpGet("usuarios/lista")]
     public async Task<ActionResult<List<DtoUsuario>>> ObtieneListaUsuario()
     {
-        var usuarios = await userManager.Users.Select(u => new DtoUsuario{Id = Guid.Parse(u.Id) ,Email = u.Email}).ToListAsync();
+        var usuarios = await userManager.Users.Select(u => new DtoUsuario{Id = Guid.Parse(u.Id) ,Email = u.Email, Nombre = u.Nombre}).ToListAsync();
 
         return Ok(usuarios);
     }

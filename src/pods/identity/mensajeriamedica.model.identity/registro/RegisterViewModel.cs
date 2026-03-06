@@ -5,6 +5,8 @@ namespace mensajeriamedica.model.identity.registro;
 public class RegisterViewModel
 {
 #pragma warning disable CS8618 // Un campo que no acepta valores NULL debe contener un valor distinto de NULL al salir del constructor. Considere la posibilidad de agregar el modificador "required" o declararlo como un valor que acepta valores NULL.
+    public string? Nombre { get; set; }
+    public string? Apellido { get; set; }
     [Required]
     [EmailAddress]
     [Display(Name = "Email")]
@@ -15,7 +17,6 @@ public class RegisterViewModel
     [DataType(DataType.Password)]
     [Display(Name = "Password")]
     public string Password { get; set; }
-
     /// <summary>
     /// Codigo para registro de usaurios.
     /// </summary>

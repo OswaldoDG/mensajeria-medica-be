@@ -45,7 +45,12 @@ public class ServicioRegistro(ILogger<ServicioRegistro> logger, UserManager<Appl
         }
         else
         {
-            user = new ApplicationUser() { UserName = registro.Email, Email = registro.Email };
+            user = new ApplicationUser() { UserName = registro.Email, Email = registro.Email,
+                Nombre = string.IsNullOrWhiteSpace(registro.Nombre) &&
+                         string.IsNullOrWhiteSpace(registro.Apellido) ?
+                         null :
+                         string.Join(" ", new[] { registro.Nombre, registro.Apellido }.Where(x => !string.IsNullOrWhiteSpace(x)))
+            };
             var result = await userManager.CreateAsync(user, registro.Password);
             if (!result.Succeeded)
             {

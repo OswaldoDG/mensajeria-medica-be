@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using mensajeriamedica.services.comunicaciones;
 
@@ -11,9 +12,11 @@ using mensajeriamedica.services.comunicaciones;
 namespace mensajeriamedica.services.comunicaciones.migrations
 {
     [DbContext(typeof(DbContextMensajeria))]
-    partial class DbContextMensajeriaModelSnapshot : ModelSnapshot
+    [Migration("20260306172556_NombreUsuario")]
+    partial class NombreUsuario
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

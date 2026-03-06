@@ -13,6 +13,7 @@ namespace mensajeriamedica.services.comunicaciones.configuracion
             builder.Property(user => user.Id).IsRequired(true);
             builder.Property(user => user.CentroCostosId).IsRequired(true);
             builder.Property(user => user.UsuarioId).IsRequired(true);
+            builder.Property(user => user.Nombre).IsRequired(false);
 
             builder.HasOne(user => user.CentroCostos).WithMany(c => c.Usuarios).HasForeignKey(user => user.CentroCostosId);
 
