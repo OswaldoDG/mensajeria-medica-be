@@ -482,13 +482,13 @@ public class ServicioCentroCostos(ILogger<ServicioCentroCostos> logger, DbContex
         }
     }
 
-    public async Task<RespuestaPayload<List<DtoUsuario>>> ObtieneListaUsuarios(Guid UsuarioId)
+    public async Task<RespuestaPayload<List<DtoUsuario>>> ObtieneListaUsuarios(Guid UsuarioId, string name)
     {
         logger.LogDebug("ServicioCentroCostos - ObtieneListaUsuarios");
         RespuestaPayload<List<DtoUsuario>> respuesta = new RespuestaPayload<List<DtoUsuario>>();
         try
         {
-            var respuestaProxy = await proxy.JsonRespuestaSerializada("identidad", "usuarios/lista", "ObtieneListaUsuarios", VerboHttp.GET, null);
+            var respuestaProxy = await proxy.JsonRespuestaSerializada("identidad", $"usuarios/lista?name={name}", "ObtieneListaUsuarios", VerboHttp.GET, null);
 
             if (!respuestaProxy.Ok)
             {

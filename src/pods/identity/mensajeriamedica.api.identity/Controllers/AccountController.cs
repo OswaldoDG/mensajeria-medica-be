@@ -17,6 +17,36 @@ namespace mensajeriamedica.api.identity.Controllers;
 public class AccountController(ILogger<AccountController> logger, IServicioRegistro servicioRegistro, UserManager<ApplicationUser> userManager, IConfiguration configuration) : ControllerUsoInterno(logger)
 #pragma warning restore S6934 // A Route attribute should be added to the controller when a route template is specified at the action level
 {
+
+    [HttpPost("usuario/contrasena/mi")]
+    public async Task<ActionResult> CambiarContrasenaMi([FromBody] CambiarContrasena contrasena) 
+    {
+        logger.LogDebug("AccountController-CambiarContrasena");
+        contrasena.Id = this.UsuarioId;
+        var result = await servicioRegistro.CambiarContrasena(contrasena);
+
+        if (result.Ok)
+        {
+            return Ok();
+        }
+
+        return ActionFromCode(result.HttpCode, result.Error!.Mensaje);
+    }
+
+    [HttpPost("usuario/contrasena")]
+    public async Task<ActionResult> CambiarContrasena([FromBody] CambiarContrasena contrasena)
+    {
+        logger.LogDebug("AccountController-CambiarContrasena");
+        var result = await servicioRegistro.CambiarContrasena(contrasena);
+
+        if (result.Ok)
+        {
+            return Ok();
+        }
+
+        return ActionFromCode(result.HttpCode, result.Error!.Mensaje);
+    }
+
     [SwaggerOperation("Registra un nuevo usuario")]
     [SwaggerResponse(statusCode: 200, description: "Usuario Registrado satisfactoriamente")]
     [SwaggerResponse(statusCode: 500, description: "Error al crear registro")]
@@ -112,9 +142,9 @@ public class AccountController(ILogger<AccountController> logger, IServicioRegis
     [SwaggerResponse(statusCode: 404, description: "Registro no encontrado")]
     [SwaggerResponse(statusCode: 500, description: "Error al localizar registro")]
     [HttpGet("usuarios/lista")]
-    public async Task<ActionResult<List<DtoUsuario>>> ObtieneListaUsuario()
+    public async Task<ActionResult<List<DtoUsuario>>> ObtieneListaUsuario([FromQuery(Name = "name")] string? name = null)
     {
-        var usuarios = await userManager.Users.Select(u => new DtoUsuario{Id = Guid.Parse(u.Id) ,Email = u.Email, Nombre = u.Nombre}).ToListAsync();
+        var usuarios = await userManager.Users.Where(u=>u.UserName.Contains(name) || u.Email.Contains(name)).Select(u => new DtoUsuario{Id = Guid.Parse(u.Id) ,Email = u.Email, Nombre = u.Nombre}).ToListAsync();
 
         return Ok(usuarios);
     }

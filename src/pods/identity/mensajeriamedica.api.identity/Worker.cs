@@ -16,6 +16,7 @@ public class Worker(IServiceProvider serviceProvider) : IHostedService
         await using var scope = serviceProvider.CreateAsyncScope();
 
         var manager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
         if (await manager.FindByClientIdAsync("mensajeriamedica-interservicio") == null)
         {
@@ -45,6 +46,22 @@ public class Worker(IServiceProvider serviceProvider) : IHostedService
                     Permissions.GrantTypes.RefreshToken
                 }
             });
+        }
+
+        if (await userManager.FindByNameAsync("administrador") == null)
+        {
+            var admin = await userManager.CreateAsync(new ApplicationUser
+            {
+                UserName = "administrador",
+                Email = "administrador@mensajeria.com",
+                Estado = EstadoCuenta.Activo,
+                Nombre = "Administrador",
+                EmailConfirmed = true,
+                FechaRegistro = DateTime.UtcNow,
+            }, "Pa$$w0rd");
+
+            await userManager.AddClaimAsync(await userManager.FindByNameAsync("administrador"), new System.Security.Claims.Claim("rol", "admin"));
+
         }
     }
 

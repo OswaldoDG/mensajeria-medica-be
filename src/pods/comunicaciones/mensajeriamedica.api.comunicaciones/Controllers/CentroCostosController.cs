@@ -145,9 +145,9 @@ namespace mensajeriamedica.api.comunicaciones.Controllers
         [SwaggerResponse(statusCode: 409, description: "Datos incorrectos")]
         [SwaggerResponse(statusCode: 403, description: "Sin acceso")]
         [SwaggerResponse(statusCode: 401, description: "No autorizado")]
-        public async Task<ActionResult<List<DtoUsuario>>> ObtieneListaUsuarios()
+        public async Task<ActionResult<List<DtoUsuario>>> ObtieneListaUsuarios([FromQuery(Name = "name")] string? name = null)
         {
-            var respuesta = await servicioCentroCostos.ObtieneListaUsuarios(UsuarioGuid!.Value);
+            var respuesta = await servicioCentroCostos.ObtieneListaUsuarios(UsuarioGuid!.Value, name);
             if (!respuesta.Ok)
             {
 

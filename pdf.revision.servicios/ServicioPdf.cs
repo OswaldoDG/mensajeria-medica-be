@@ -2,13 +2,10 @@
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Sas;
 using comunes.respuestas;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 using pdf.revision.model;
 using pdf.revision.model.dtos;
 using pdf.revision.model.dtos.Nuevos;
@@ -219,6 +216,11 @@ public class ServicioPdf(ILogger<ServicioPdf> pdf, DbContextPdf db, IConfigurati
         var limite = DateTime.UtcNow.AddHours(-2);
 
         var zombies = await db.Archivos.Include(a => a.Partes).Where(a => a.Estado == EstadoRevision.EnCurso && a.UltimaRevision < limite).ToListAsync();
+        //var zombiesR = await db.Revisiones.Where(a => a.FechaFinRevision == null && a.FechaInicioRevision < limite).ToListAsync();
+        //foreach (var z in zombiesR)
+        //{
+        //    db.Revisiones.Remove(z);
+        //}
 
         foreach (var archivo in zombies)
         {

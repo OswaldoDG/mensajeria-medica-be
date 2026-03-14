@@ -35,6 +35,6 @@ public interface IServicioCentroCostos
     Task<Respuesta> AgregaUsuarioCentroCostos(int centroCostosId, Guid UsuarioID, string nombre);
 
     Task<Respuesta> EliminaUsuarioCentroCostos(int centroCostosId, Guid UsuarioID);
-    Task<RespuestaPayload<List<DtoUsuario>>> ObtieneListaUsuarios(Guid UsuarioId);
+    Task<RespuestaPayload<List<DtoUsuario>>> ObtieneListaUsuarios(Guid UsuarioId, string name);
     Task<RespuestaPayload<List<UsuarioCentroCostos>>> ObtieneUsuariosCentroCostos(int centroCostosId);
 }

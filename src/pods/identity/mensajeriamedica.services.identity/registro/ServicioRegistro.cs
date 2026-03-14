@@ -52,6 +52,7 @@ public class ServicioRegistro(ILogger<ServicioRegistro> logger, UserManager<Appl
                          string.Join(" ", new[] { registro.Nombre, registro.Apellido }.Where(x => !string.IsNullOrWhiteSpace(x)))
             };
             var result = await userManager.CreateAsync(user, registro.Password);
+            await userManager.AddClaimAsync(user, new System.Security.Claims.Claim("rol", "consulta"));
             if (!result.Succeeded)
             {
                 respuesta.Error = new ()
@@ -197,6 +198,18 @@ public class ServicioRegistro(ILogger<ServicioRegistro> logger, UserManager<Appl
             return respuesta;
         }
 
+        respuesta.Ok = true;
+        return respuesta;
+    }
+
+    public async Task<Respuesta> CambiarContrasena(CambiarContrasena contrasena)
+    {
+        Respuesta respuesta = new ();
+        var user = await userManager.FindByIdAsync(contrasena.Id);
+        if (user != null) {
+            await userManager.RemovePasswordAsync(user);
+            await userManager.AddPasswordAsync(user, contrasena.Password);
+        }
         respuesta.Ok = true;
         return respuesta;
     }

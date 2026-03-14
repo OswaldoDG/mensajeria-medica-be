@@ -28,4 +28,13 @@ public interface IServicioRegistro
     /// <param name="id">Id del proceos.</param>
     /// <returns>Resultado o error asociado</returns>
     Task<Respuesta> PostRegistroConfirmar(string id);
+
+    /// <summary>
+    /// CAmbia la contraseña para un usuaio.
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="pass"></param>
+    /// <returns></returns>
+    Task<Respuesta> CambiarContrasena(CambiarContrasena contrasena);
+
 }

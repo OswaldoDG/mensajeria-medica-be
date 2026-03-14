@@ -144,6 +144,15 @@ public class AuthorizationController : Controller
                 nameType: Claims.Name,
                 roleType: Claims.Role);
 
+            var claims = await _userManager.GetClaimsAsync(user);
+            if(claims!=null && claims.Any())
+            {
+                foreach(var claim in claims)
+                {
+                    identity.AddClaim(claim);
+                }
+            }
+
             // Add the claims that will be persisted in the tokens.
             identity.SetClaim(Claims.Subject, await _userManager.GetUserIdAsync(user))
                     .SetClaim(Claims.Email, await _userManager.GetEmailAsync(user))

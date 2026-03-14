@@ -212,6 +212,7 @@ public class Program
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddHealthChecks();
 
+
         if (!string.IsNullOrEmpty(builder.Configuration.GetValue<string>("AzureMonitor:ConnectionString"))
             && builder.Configuration.GetValue<bool>("AzureMonitor:Enabled"))
         {
