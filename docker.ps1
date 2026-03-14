@@ -1,10 +1,10 @@
 Write-Host "Building identity"
-docker build -t pdfsplitter-identity:1.6.1 -f src\pods\identity\mensajeriamedica.api.identity\Dockerfile .
+docker build -t pdfsplitter-identity:1.6.2 -f src\pods\identity\mensajeriamedica.api.identity\Dockerfile .
 Write-Host "Buiding pdf revision"
 docker build -t pdfsplitter-revision:1.6.1 -f pdf.revision.api\Dockerfile .
 
 Write-Host "Pushing"
-docker tag pdfsplitter-identity:1.6.1 oswaldodgmx/pdfsplitter-identity:latest
+docker tag pdfsplitter-identity:1.6.2 oswaldodgmx/pdfsplitter-identity:latest
 docker tag pdfsplitter-revision:1.6.1 oswaldodgmx/pdfsplitter-api:latest
 docker push oswaldodgmx/pdfsplitter-identity:latest
 docker push oswaldodgmx/pdfsplitter-api:latest
