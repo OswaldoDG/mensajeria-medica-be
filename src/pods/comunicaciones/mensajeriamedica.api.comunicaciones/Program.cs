@@ -1,11 +1,12 @@
-using System.Reflection;
-using System.Text.Json.Serialization;
 using comunes.extensiones;
 using mensajeriamedica.model.comunicaciones.whatsapp;
 using mensajeriamedica.services.comunicaciones;
 using mensajeriamedica.services.comunicaciones.interpretes;
 using mensajeriamedica.services.comunicaciones.servicios;
 using Microsoft.EntityFrameworkCore;
+using OpenIddict.Validation.AspNetCore;
+using System.Reflection;
+using System.Text.Json.Serialization;
 
 #pragma warning disable S1118 // Utility classes should not have public constructors
 #pragma warning disable S3903 // Types should be defined in named namespaces
@@ -31,6 +32,9 @@ public class Program
         {
             options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
         });
+
+        builder.Services.AddAuthentication(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+        builder.Services.AddAuthorization();
 
         builder.Services.AddHttpClient();
         builder.Services.AddHostedService<ProcesadorArchivos>();

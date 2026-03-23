@@ -18,7 +18,7 @@ public class ServicioAuthInterprocesoJWT(ILogger<ServicioAuthInterprocesoJWT> lo
     /// </summary>
     /// <param name="claveConfiguracion">Clave de configuracion obtener el token.</param>
     /// <returns>Token de JWT.</returns>
-    public async Task<TokenJWT?> TokenInterproceso(string claveConfiguracion = "auth_default")
+    public async Task<TokenJWT?> TokenInterproceso(string claveConfiguracion = "")
     {
         try
         {

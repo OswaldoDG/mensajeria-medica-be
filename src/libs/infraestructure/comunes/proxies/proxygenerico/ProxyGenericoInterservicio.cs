@@ -115,9 +115,11 @@ public class ProxyGenericoInterservicio(ILogger<ProxyGenericoInterservicio> logg
             }
 
             HttpClient httpClient = httpClientFactory.CreateClient(nombreHostServicio);
-            logger.LogDebug($"ProxyGenericoInterservicio - JsonRespuestaSerializada {descripcionOperacion}");
+            logger.LogDebug($"ProxyGenericoInterservicio - {nombreHostServicio} @ {host?.UrlBase} JsonRespuestaSerializada {descripcionOperacion}");
             endpoint = $"/{endpoint.TrimStart('/')}";
-            httpClient.BaseAddress = new Uri(host!.UrlBase.TrimEnd('/'));
+            // httpClient.BaseAddress = new Uri(host!.UrlBase.TrimEnd('/'));
+
+            string url = $"{host!.UrlBase.TrimEnd('/')}/{endpoint}";
 
             TokenJWT? jWT = await servicioAuthJWT!.TokenInterproceso(host.ClaveAutenticacion!);
             if (jWT == null)
@@ -127,8 +129,8 @@ public class ProxyGenericoInterservicio(ILogger<ProxyGenericoInterservicio> logg
             }
             else
             {
-                logger.LogDebug($"ProxyGenericoInterservicio - JsonRespuestaSerializada Llamado remoto a {httpClient.BaseAddress}/{endpoint}");
-
+                logger.LogDebug($"ProxyGenericoInterservicio - JsonRespuestaSerializada Llamado remoto a {url}");
+                logger.LogDebug(jWT.access_token);
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jWT.access_token);
 
                 HttpResponseMessage? response = null;
@@ -136,11 +138,11 @@ public class ProxyGenericoInterservicio(ILogger<ProxyGenericoInterservicio> logg
                 {
                     case VerboHttp.POST:
                         StringContent? contenido = payload != null ? new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json") : null;
-                        response = await httpClient.PostAsync(endpoint, contenido);
+                        response = await httpClient.PostAsync(url, contenido);
                         break;
 
                     case VerboHttp.GET:
-                        response = await httpClient.GetAsync(endpoint);
+                        response = await httpClient.GetAsync(url);
                         break;
                 }
 

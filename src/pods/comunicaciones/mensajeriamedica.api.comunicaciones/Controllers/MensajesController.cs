@@ -1,8 +1,8 @@
 ﻿using comunes.busqueda;
 using comunes.respuestas;
 using mensajeriamedica.model.comunicaciones.mensajes;
-using mensajeriamedica.services.comunicaciones.helper;
 using mensajeriamedica.services.comunicaciones.servicios;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.Annotations;
@@ -10,6 +10,7 @@ using System.Net;
 
 namespace mensajeriamedica.api.comunicaciones.Controllers;
 
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class MensajesController(ILogger<MensajesController> logger,  IServicioMensajes servicioMensajes, IConfiguration configuration) : ControllerBase
